@@ -1,5 +1,5 @@
 import { IconLike, IconNoLike } from "@/assets/Icons"
-import { BaseComponentType } from "@/models"
+import type { BaseComponentType } from "@/models"
 import { Suspense, lazy } from "react"
 import { usePostFooter } from "./hooks"
 

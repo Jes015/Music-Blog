@@ -1,3 +1,4 @@
+export * from './Avatar/Avatar'
 export * from './Comments/Comments'
-export * from './CustomTextField/CustomTextField'
+export * from './TextField/CustomTextField'
 
