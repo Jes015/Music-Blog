@@ -1,5 +1,5 @@
-import { BaseComponentType } from "@/models"
-import { Avatar } from "@radix-ui/themes"
+import type { BaseComponentType } from "@/models"
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 import { useState } from "react"
 
 export const Item: BaseComponentType = ({ children, ...props }) => {
@@ -21,13 +21,11 @@ export const Item: BaseComponentType = ({ children, ...props }) => {
                     className="flex items-center gap-1"
                 >
                     <Avatar
-                        src="https://avatars.githubusercontent.com/u/120581623?v=4"
-                        alt="User image"
-                        fallback='e'
-                        size='1'
-                        radius="full"
                         className="border-[0.01rem] border-borderPrimary cursor-pointer"
-                    />
+                    >
+                        <AvatarImage src="https://avatars.githubusercontent.com/u/120581623?v=4" alt="user avatar" />
+                        <AvatarFallback>T</AvatarFallback>
+                    </Avatar>
                     <span className="text-sm font-bold">Jes015</span>
                 </div>
             </header>

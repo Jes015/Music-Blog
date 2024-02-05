@@ -1,4 +1,5 @@
-import { BaseComponentProps } from "@/models";
+import type { BaseComponentProps } from "@/models"
+import clsx from "clsx"
 
 interface SectionLayoutProps extends BaseComponentProps {
     title: string
@@ -9,10 +10,10 @@ export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, c
     return (
         <div
             className={
-                [
+                clsx(
                     'w-full h-full flex flex-col gap-1 mt-5',
                     className
-                ].join(' ')
+                )
             }
             {...props}
         >

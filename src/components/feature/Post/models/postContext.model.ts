@@ -1,4 +1,4 @@
-import { IPost } from "apptypes";
+import type { IPost } from "@/models"
 
 export interface PostContext {
     data: IPost

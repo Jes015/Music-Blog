@@ -1,6 +1,5 @@
-import { BaseComponentType } from "@/models";
-import { ScrollArea } from "@radix-ui/themes";
-import { usePostContext } from "../services/context/";
+import type { BaseComponentType } from "@/models"
+import { usePostContext } from "../services/context/"
 
 export const PostContent: BaseComponentType = () => {
     const { data } = usePostContext()
@@ -15,11 +14,9 @@ export const PostContent: BaseComponentType = () => {
                 >
                 </div>
             }
-            <ScrollArea
-                type="auto" scrollbars="vertical" className="font-normal text-sm max-h-[120px] px-1"
-            >
+            <div>
                 {data.content}
-            </ScrollArea>
+            </div>
         </div>
     );
 };

@@ -1,0 +1,34 @@
+---
+import { Post } from "@/components/feature"
+import { SectionLayout } from "@/components/layouts"
+import type { IPost, TPostArray, UUID } from "@/models"
+import { getCollection, getEntry } from "astro:content"
+const posts = await getCollection("posts");
+
+const data: TPostArray = [];
+
+await Promise.allSettled(
+    posts.map(async (postCollection) => {
+        let post: IPost | null = null;
+
+        const publisherEntry = await getEntry(postCollection.data.publisher);
+
+        post = {
+            ...postCollection.data,
+            id: postCollection.data.id as UUID,
+            publisher: {
+                ...publisherEntry.data,
+                id: publisherEntry.data.id as UUID,
+            },
+        };
+
+        data.push(post);
+    }),
+);
+
+---
+
+<SectionLayout title="Posts">
+    {data.map((post) => <Post data={post} />)}
+</SectionLayout>
+)
