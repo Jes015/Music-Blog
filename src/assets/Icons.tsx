@@ -1,4 +1,4 @@
-import { ComponentIcon } from "@/models"
+import type { ComponentIcon } from "@/models"
 
 // icon:heart | Ant Design Icons https://ant.design/components/icon/ | Ant Design
 export const IconNoLike: ComponentIcon = (props) => {

@@ -1,5 +1,5 @@
+import { Avatar, Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 import { usePostContext } from "../services/context"
 
 export const PostHeader: BaseComponentType = () => {
@@ -12,11 +12,13 @@ export const PostHeader: BaseComponentType = () => {
                 className="flex items-center gap-1"
             >
                 <Avatar
-                    className="border-[0.01rem] border-borderPrimary cursor-pointer"
-                >
-                    <AvatarImage src="https://avatars.githubusercontent.com/u/120581623?v=4" alt="user avatar" />
-                    <AvatarFallback>{data.publisher.name.at(0)}</AvatarFallback>
-                </Avatar>
+                    avatarImageProps={{
+                        src: data.publisher.imageURL,
+                    }}
+                    avatarFallback={{
+                        children: data.publisher.name.at(-1)
+                    }}
+                />
                 <h3>{data.title}</h3>
                 <span
                     className="text-xs text-textTertiary font-normal"
@@ -25,16 +27,11 @@ export const PostHeader: BaseComponentType = () => {
                 </span>
             </div>
             <div
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-xs font-normal"
             >
-                <button
-                >
-                    Report
-                </button>
-                <button
-                >
+                <Button>
                     Share
-                </button>
+                </Button>
             </div>
         </header>
     )

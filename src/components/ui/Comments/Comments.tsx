@@ -1,4 +1,4 @@
-import { BaseComponentType } from "@/models"
+import type { BaseComponentType } from "@/models"
 import { Item } from "./components"
 
 export const Comments: BaseComponentType = () => {

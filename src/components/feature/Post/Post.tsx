@@ -10,7 +10,7 @@ export const Post: React.FC<PostProps> = ({ data }) => {
     return (
         <PostProvider {...{ data }}>
             <article
-                className="w-full border border-borderPrimary rounded-md font-bold"
+                className="w-full border border-neutral-800 rounded-md font-bold"
             >
                 <PostHeader />
                 <PostContent />

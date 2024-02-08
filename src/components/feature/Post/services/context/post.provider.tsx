@@ -1,6 +1,6 @@
-import { BaseComponentProps } from "@/models";
-import { PostContext } from "../../models";
-import { postContext } from "./post.context";
+import type { BaseComponentProps } from "@/models"
+import type { PostContext } from "../../models"
+import { postContext } from "./post.context"
 
 interface PostProviderProps extends BaseComponentProps, PostContext {
 }

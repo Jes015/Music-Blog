@@ -1,0 +1,24 @@
+---
+import "@fontsource/roboto"
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+	</head>
+	<body class="bg-neutral-900 text-white">
+		<main class="flex flex-col items-center">
+			<div class="[width:96vw] sm:[width:60vw] md:[width:55vw] lg:[width:40vw] xl:[width:35vw] 2xl:[width:20vw]">
+				<slot />
+			</div>
+		</main>
+	</body>
+</html>
+
+<style>
+	body {
+		font-family: "Roboto";
+	}
+</style>

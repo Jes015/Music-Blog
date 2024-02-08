@@ -14,7 +14,8 @@ export const defaultPostContextValues: PostContext = {
         publisher: {
             name: 'Jes015',
             description: 'HOla',
-            id: '9ec90306-6b6e-4dcf-bd55-f56beb9f5daa'
+            id: '9ec90306-6b6e-4dcf-bd55-f56beb9f5daa',
+            imageURL: 'https://avatars.githubusercontent.com/u/120581623?v=4'
         },
     }
 }

@@ -29,6 +29,5 @@ await Promise.allSettled(
 ---
 
 <SectionLayout title="Posts">
-    {data.map((post) => <Post data={post} />)}
+    {data.map((post) => <Post data={post} client:load />)}
 </SectionLayout>
-)

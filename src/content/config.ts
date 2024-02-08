@@ -12,7 +12,8 @@ const postsSchema = z.object({
 const publisherSchema = z.object({
     id: z.string().uuid(),
     name: z.string().min(1),
-    description: z.string().min(2)
+    description: z.string().min(2),
+    imageURL: z.string().url()
 })
 
 const postsCollection = defineCollection({
