@@ -25,9 +25,12 @@ await Promise.allSettled(
         data.push(post);
     }),
 );
-
 ---
 
 <SectionLayout title="Posts">
-    {data.map((post) => <Post data={post} client:load />)}
+    {
+        data
+            .sort((a, b) => b.publishDate - a.publishDate)
+            .map((post) => <Post data={post} client:load />)
+    }
 </SectionLayout>
