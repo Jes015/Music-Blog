@@ -6,7 +6,7 @@ export const PostHeader: BaseComponentType = () => {
     const { data } = usePostContext()
     return (
         <header
-            className="flex items-center justify-between border-b border-borderPrimary p-1"
+            className="sticky top-0 bg-[#191919] flex items-center justify-between border-b border-borderPrimary p-1"
         >
             <div
                 className="flex items-center gap-1"
