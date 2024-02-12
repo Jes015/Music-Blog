@@ -8,7 +8,7 @@ interface AvatarProps extends DefaultAvatarProps {
 export const Avatar: React.FC<AvatarProps> = ({ avatarImageProps, avatarFallback, ...props }) => {
     return (
         <DefaultAvatar
-            className="border-[0.01rem] bg-neutral-800 border-borderPrimary cursor-pointer w-9 h-9 flex items-center justify-center rounded-full overflow-hidden"
+            className="border-[0.01rem] bg-neutral-800 border-borderPrimary cursor-pointer min-w-9 w-9 h-9 flex items-center justify-center rounded-full overflow-hidden"
             {...props}
         >
             <AvatarImage {...avatarImageProps} />
