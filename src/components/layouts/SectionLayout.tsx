@@ -11,7 +11,7 @@ export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, c
         <div
             className={
                 clsx(
-                    'w-full h-full flex flex-col gap-1 mt-5',
+                    'w-full h-full flex flex-col gap-3 mt-5 pb-72',
                     className
                 )
             }

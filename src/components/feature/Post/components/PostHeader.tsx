@@ -5,6 +5,12 @@ import { usePostContext } from "../services/context"
 
 export const PostHeader: BaseComponentType = () => {
     const { data } = usePostContext()
+
+    const handleOnClickToCopyLink = () => {
+        const postURL = location.origin + '/#' + data.id
+        navigator.clipboard.writeText(postURL)
+    }
+
     return (
         <header
             className="sticky top-0 bg-[#191919] flex items-center gap-1 justify-between border-b border-borderPrimary p-1"
@@ -30,8 +36,8 @@ export const PostHeader: BaseComponentType = () => {
             <div
                 className="flex items-center gap-1 text-xs font-normal"
             >
-                <Button>
-                    Share
+                <Button onClick={handleOnClickToCopyLink}>
+                    Copy Link
                 </Button>
             </div>
         </header>

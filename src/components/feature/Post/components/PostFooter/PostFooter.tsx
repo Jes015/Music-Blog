@@ -2,12 +2,13 @@ import { IconLike, IconNoLike } from "@/assets/Icons"
 import { Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
 import { Suspense, lazy } from "react"
+import { usePostContext } from "../../services/context"
 import { usePostFooter } from "./hooks"
 
 const Comments = lazy(() => import('@/components/ui').then(module => ({ default: module.Comments })))
 
 export const PostFooter: BaseComponentType = () => {
-
+    const { data } = usePostContext()
     const { displayComments, isLiked, toggleDisplayComments, toggleIsLiked } = usePostFooter()
 
     const handleOnClickToDisplayComments = () => {
@@ -20,7 +21,7 @@ export const PostFooter: BaseComponentType = () => {
 
     return (
         <footer
-            className="flex flex-col border-t border-borderPrimary font-normal"
+            className="flex bg-neutral-900 flex-col border-t border-borderPrimary font-normal"
         >
             <div
                 className={
