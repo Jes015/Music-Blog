@@ -1,0 +1,9 @@
+{
+    "id": "906a250c-9e88-4847-863c-a02699433bab",
+    "title": "Agregando imágenes",
+    "content": "Hiii. Voy a agregar la posibilidad de poner imágenes en los posts so este post es para testear la funcionalidad.",
+    "publishDate": 1709288964489,
+    "likes": 1,
+    "publisher": "j-oyola-baby-la-maravilla",
+    "images": ["./holaaa.png", "./holaaa2.png", "./holaaa.png"]
+}

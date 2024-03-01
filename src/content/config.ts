@@ -1,12 +1,13 @@
-import { defineCollection, reference, z } from "astro:content"
+import { defineCollection, reference, z, type ImageFunction } from "astro:content"
 
-const postsSchema = z.object({
+const postsSchema = (image: ImageFunction) => z.object({
     id: z.string().uuid(),
     title: z.string().min(2),
     content: z.string().min(3),
     publishDate: z.number(),
     likes: z.number(),
-    publisher: reference('publishers')
+    publisher: reference('publishers'),
+    images: z.array(image()).optional()
 })
 
 const publisherSchema = z.object({
@@ -18,7 +19,7 @@ const publisherSchema = z.object({
 
 const postsCollection = defineCollection({
     type: 'data',
-    schema: postsSchema
+    schema: ({ image }) => postsSchema(image)
 })
 
 const publisherCollection = defineCollection({
