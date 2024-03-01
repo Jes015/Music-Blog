@@ -13,7 +13,7 @@ export const PostHeader: BaseComponentType = () => {
 
     return (
         <header
-            className="sticky top-0 bg-[#191919] flex items-center gap-1 justify-between border-b border-borderPrimary p-1"
+            className="sticky z-50 top-0 bg-[#191919] flex items-center gap-1 justify-between border-b border-borderPrimary p-1"
         >
             <div
                 className="flex items-center gap-1"
