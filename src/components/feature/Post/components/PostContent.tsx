@@ -1,21 +1,25 @@
+import { Image } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
 import { usePostContext } from "../services/context/"
 
 export const PostContent: BaseComponentType = () => {
     const { data } = usePostContext()
+
     return (
         <div
             className="bg-neutral-900 flex flex-col gap-1 p-1 min-h-[5rem] "
         >
-            {/* <div
-                className="w-full h-72 bg-neutral-500 opacity-50 rounded-md"
-            >
-            </div> */}
+            {
+                data.images?.[0] != null &&
+                (
+                    <Image src={data.images?.[0].src}  alt={`${data.title} image`} height="288px" width="100%" />
+                )
+            }
             <div>
-                <p 
+                <p
                     className="font-normal leading-5 text-sm p-1"
-                    >
-                        {data.content}
+                >
+                    {data.content}
                 </p>
             </div>
         </div>

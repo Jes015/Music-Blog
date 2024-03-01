@@ -9,7 +9,7 @@ interface PostProps extends BaseComponentProps {
 }
 
 export const Post: React.FC<PostProps> = ({ data }) => {
-    // i would use this logic with out react methods but astro makes SSG and don't let me do it
+    // i would use this logic with out react methods but astro makes SSG and don't let me do it because of the location var
     const [isFocus, setIsFocus] = useState(false)
 
     useEffect(() => {

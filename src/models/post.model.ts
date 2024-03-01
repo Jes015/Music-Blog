@@ -1,5 +1,6 @@
 import type { IPublisher } from "@/models/publisher.model"
 import type { UUID } from "@/models/uuid.model"
+import type { ImageMetadata } from "astro"
 
 export interface IPost {
     id: UUID
@@ -8,6 +9,7 @@ export interface IPost {
     publishDate: number
     likes: number
     publisher: IPublisher
+    images?: ImageMetadata[] | null
 }
 
 export type TPostPartial = Partial<IPost>
