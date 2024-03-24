@@ -26,15 +26,15 @@ export const PostHeader: BaseComponentType = () => {
                         children: data.publisher.name.at(-1)
                     }}
                 />
-                <h3 className="text-pretty">{data.title}</h3>
+                <h3 className="text-pretty text-base font-semibold">{data.title}</h3>
                 <span
-                    className="text-xs text-textTertiary font-normal flex-shrink-0"
+                    className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0"
                 >
                     {getTimeAgo(data.publishDate)}
                 </span>
             </div>
             <div
-                className="flex items-center gap-1 text-xs font-normal"
+                className="flex items-center gap-1 text-xs font-light"
             >
                 <Button onClick={handleOnClickToCopyLink}>
                     Copy Link

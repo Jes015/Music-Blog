@@ -31,11 +31,10 @@ export const PostContent: BaseComponentType = () => {
                 </Carousel>
             }
             <div>
-                <p
+                <div
                     className="font-normal leading-5 text-sm p-1"
-                >
-                    {data.content}
-                </p>
+                    dangerouslySetInnerHTML={{ __html: data.content}}
+                />
             </div>
         </div>
     )
