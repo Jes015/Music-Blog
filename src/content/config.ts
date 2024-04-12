@@ -17,6 +17,20 @@ const publisherSchema = z.object({
     imageURL: z.string().url()
 })
 
+const goalSchema = z.object(
+    {
+        year: z.string(),
+        yearNumeric: z.number(),
+        goals: z.array(
+            z.object({
+                id: z.string(),
+                name: z.string().min(1),
+                status: z.enum(['completed', 'pending', 'not-completed'])
+            })
+        )
+    }
+)
+
 const postsCollection = defineCollection({
     type: 'data',
     schema: ({ image }) => postsSchema(image)
@@ -27,7 +41,13 @@ const publisherCollection = defineCollection({
     schema: publisherSchema
 })
 
+const goalsCollection = defineCollection({
+    type: 'data',
+    schema: goalSchema
+})
+
 export const collections = {
     posts: postsCollection,
-    publishers: publisherCollection
+    publishers: publisherCollection,
+    goals: goalsCollection
 }

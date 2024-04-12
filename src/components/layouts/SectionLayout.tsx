@@ -11,7 +11,7 @@ export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, c
         <div
             className={
                 clsx(
-                    'w-full h-full flex flex-col gap-3 mt-5 pb-72',
+                    'w-full h-full flex flex-col gap-3 mt-5',
                     className
                 )
             }
@@ -20,7 +20,7 @@ export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, c
             <header
                 className="flex items-center justify-between"
             >
-                <h1 className='font-bold text-xl'>{title}</h1>
+                <h1 className='font-bold text-xl underline decoration-wavy decoration-zinc-50'>{title}</h1>
                 {rightNode}
             </header>
             {children}

@@ -1,11 +1,15 @@
 ---
+import GoalsSection from "@/components/feature/GoalsSection.astro"
 import JOyolaBabyTheLegend from "@/components/feature/JOyolaBabyTheLegend.astro"
 import PostsSection from "@/components/feature/PostsSection.astro"
 import MainLayout from "@/layouts/MainLayout.astro"
-import '@/styles/global.styles.css'
+import "@/styles/global.styles.css"
 ---
 
 <MainLayout>
 	<JOyolaBabyTheLegend />
-	<PostsSection />
+	<div class="flex flex-col">
+		<GoalsSection />
+		<PostsSection className="flex-shrink-0 flex-grow [flex-basis:100%]" />
+	</div>
 </MainLayout>

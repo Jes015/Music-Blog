@@ -1,4 +1,8 @@
 ---
+interface Props {
+    className?: string
+}
+
 import { Post } from "@/components/feature"
 import { SectionLayout } from "@/components/layouts"
 import type { IPost, TPostArray, UUID } from "@/models"
@@ -25,9 +29,11 @@ await Promise.allSettled(
         data.push(post);
     }),
 );
+
+const { className } = Astro.props
 ---
 
-<SectionLayout title="Posts">
+<SectionLayout className={[className, 'pb-72'].join(' ')} title="Posts">
     {
         data
             .sort((a, b) => b.publishDate - a.publishDate)

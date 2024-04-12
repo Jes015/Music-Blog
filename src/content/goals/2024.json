@@ -1,0 +1,31 @@
+{
+    "year": "2024 - The beginning",
+    "yearNumeric": 2024,
+    "goals": [
+        {
+            "id": "primera cancion, producirla profesional",
+            "name": "Producir una cancion de forma profesional. Como la elite.",
+            "status": "completed"
+        },
+        {
+            "id": "Vendiendo beats Edition",
+            "name": "Empezar a hacer y vender beats.",
+            "status": "completed"
+        },
+        {
+            "id": "primera cancion, como artista",
+            "name": "Sacar mi primera cancion como artista",
+            "status": "pending"
+        },
+        {
+            "id": "no give up",
+            "name": "No abandonar la producción por momentos difíciles",
+            "status": "pending"
+        },
+        {
+            "id": "contactos, networking, mami, ya tu sabe",
+            "name": "Hacer amigos y networking (contactos) en el mundo de la producción musical.",
+            "status": "pending"
+        }
+    ]
+}

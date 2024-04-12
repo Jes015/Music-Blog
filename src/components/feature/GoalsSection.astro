@@ -1,0 +1,62 @@
+---
+interface Props {
+    className?: string;
+}
+
+import { IconCheck, IconImposible, IconPending } from "@/assets/Icons"
+import { getCollection } from "astro:content"
+import clsx from "clsx"
+import { SectionLayout } from "../layouts"
+
+const goals = await getCollection("goals");
+
+const { className } = Astro.props;
+---
+
+<SectionLayout className={[className, '!pb-0'].join(' ')} title="Metas">
+    <ul>
+        {
+            goals.toSorted((a, b) => b.data.yearNumeric - a.data.yearNumeric).map(({ data: goalCollection }) => (
+                <li class="mb-4">
+                    <span class="font-bold underline mb-2 inline-block text-base text-zinc-100">
+                        {goalCollection.year}
+                    </span>
+                    <ul class="list-decimal">
+                        {
+                            goalCollection?.goals?.[0] == null && <li class="text-xs text-zinc-300">Ya casiii pongo estas, espera otro año mas.</li>
+                        }
+                        {goalCollection.goals.map((goal) => (
+                            <li class="text-sm">
+                                <span
+                                    class={
+                                        clsx(
+                                        goal.status === 'completed' && 'line-through decoration-white/50 text-zinc-100/80'
+                                    )
+                                }
+                                >
+                                    {goal.name}
+                                </span>
+
+                                {goal.status === "completed" && (
+                                    <span title="La rompí, baby">
+                                        <IconCheck className="text-green-400 inline-block ml-1" />
+                                    </span>
+                                )}
+                                {goal.status === "pending" && (
+                                    <span title="En esto estoy, chica. Ya casi">
+                                        <IconPending className="text-zinc-400 inline-block ml-1" />
+                                    </span>
+                                )}
+                                {goal.status === "not-completed" && (
+                                    <span title="Imposible, seguro lo terminé el siguiente año, babygirl">
+                                        <IconImposible className="text-white inline-block ml-1" />
+                                    </span>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </li>
+            ))
+        }
+    </ul>
+</SectionLayout>
