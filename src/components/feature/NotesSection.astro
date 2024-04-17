@@ -1,0 +1,25 @@
+---
+interface Props {
+    className?: string;
+}
+
+import { SectionLayout } from "../layouts"
+
+const { className } = Astro.props;
+---
+
+<SectionLayout title="Notas" className={[className, "!pb-0"].join(" ")}>
+    <p>Estas son todas mis notas en produccion musical.</p>
+    <p>
+        Te va a servir mucho si estas empezando como productor.
+        <br />
+        <a
+            href="https://potent-twill-2bd.notion.site/MUSIC-PRODUCTION-e5ac8d7e5871403d9d1c074135fa8ac3?pvs=74"
+            target="_blank">Ver notas de produccion musical</a
+        >
+    </p>
+    <p>
+        Tengo cientos de paginas de artista pero eso es secreto y no te lo puedo
+        mostrar, shhhh.
+    </p>
+</SectionLayout>
