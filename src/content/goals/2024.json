@@ -15,7 +15,7 @@
         {
             "id": "primera cancion, como artista",
             "name": "Sacar mi primera cancion como artista",
-            "status": "pending"
+            "status": "completed"
         },
         {
             "id": "no give up",
@@ -25,6 +25,11 @@
         {
             "id": "contactos, networking, mami, ya tu sabe",
             "name": "Hacer amigos y networking (contactos) en el mundo de la producción musical.",
+            "status": "pending"
+        },
+        {
+            "id": "terminar mi album, calls",
+            "name": "Terminar CALLS, mi primer album",
             "status": "pending"
         }
     ]

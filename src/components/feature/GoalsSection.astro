@@ -21,12 +21,12 @@ const { className } = Astro.props;
                     <span class="font-bold underline mb-2 inline-block text-base text-zinc-100">
                         {goalCollection.year}
                     </span>
-                    <ul class="list-decimal">
+                    <ul class="list-decimal text-base">
                         {
                             goalCollection?.goals?.[0] == null && <li class="text-xs text-zinc-300">Ya casiii pongo estas, espera otro año mas.</li>
                         }
                         {goalCollection.goals.map((goal) => (
-                            <li class="text-sm">
+                            <li class="text-base">
                                 <span
                                     class={
                                         clsx(
