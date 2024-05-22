@@ -28,7 +28,7 @@ export const PostHeader: BaseComponentType = () => {
                 />
                 <h3 className="text-pretty text-base font-semibold">{data.title}</h3>
                 <span
-                    className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0"
+                    className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0 pt-[0.18rem]"
                 >
                     {getTimeAgo(data.publishDate)}
                 </span>
