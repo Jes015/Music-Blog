@@ -30,10 +30,14 @@ await Promise.allSettled(
     }),
 );
 
+const felicidadPost = structuredClone(data.find((post) => post.id === 'c105a107-17f1-4dd0-bf97-3ddfbae66dbe') as IPost)
+felicidadPost.id = 'pinned-pinned-pinned-pinned-pinned'
+
 const { className } = Astro.props
 ---
 
 <SectionLayout className={[className, 'pb-72'].join(' ')} title="Posts">
+    <Post data={felicidadPost} isPinned client:load/>
     {
         data
             .sort((a, b) => b.publishDate - a.publishDate)
