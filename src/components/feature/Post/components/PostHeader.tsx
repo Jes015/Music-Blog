@@ -1,6 +1,7 @@
 import { Avatar, Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
 import { getTimeAgo } from "@/utils"
+import clsx from "clsx"
 import { usePostContext } from "../services/context"
 
 export const PostHeader: BaseComponentType = () => {
@@ -26,7 +27,16 @@ export const PostHeader: BaseComponentType = () => {
                         children: data.publisher.name.at(-1)
                     }}
                 />
-                <h3 className="text-pretty text-base font-semibold">{data.title}</h3>
+                <h3
+                    className={
+                        clsx(
+                            "font-semibold",
+                            data.title.length > 50 ? 'text-xs text-balance' : 'text-base text-pretty'
+                        )
+                    }
+                >
+                    {data.title}
+                </h3>
                 <span
                     className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0 pt-[0.18rem]"
                 >
@@ -34,7 +44,7 @@ export const PostHeader: BaseComponentType = () => {
                 </span>
             </div>
             <div
-                className="flex items-center gap-1 text-xs font-light"
+                className="flex items-center gap-1 text-xs font-light flex-shrink-0"
             >
                 <Button onClick={handleOnClickToCopyLink}>
                     Copy Link
