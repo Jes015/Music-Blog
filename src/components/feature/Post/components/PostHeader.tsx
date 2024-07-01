@@ -1,6 +1,6 @@
 import { Avatar, Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
-import { getTimeAgo } from "@/utils"
+import { copyClipboardPost, getTimeAgo } from "@/utils"
 import clsx from "clsx"
 import { usePostContext } from "../services/context"
 
@@ -8,8 +8,7 @@ export const PostHeader: BaseComponentType = () => {
     const { data } = usePostContext()
 
     const handleOnClickToCopyLink = () => {
-        const postURL = location.origin + '/#' + data.id
-        navigator.clipboard.writeText(postURL)
+        copyClipboardPost(data.id)
     }
 
     return (

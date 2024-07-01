@@ -7,7 +7,11 @@ const postsSchema = (image: ImageFunction) => z.object({
     publishDate: z.number(),
     likes: z.number(),
     publisher: reference('publishers'),
-    images: z.array(image()).optional()
+    images: z.array(image()).optional(),
+    unlock: z.object({
+        unlockInYears: z.number(),
+        message: z.string().optional()
+    }).optional()
 })
 
 const publisherSchema = z.object({

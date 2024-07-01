@@ -1,5 +1,7 @@
 import { IconPinned } from "@/assets/Icons"
+import { Button } from "@/components/ui"
 import type { BaseComponentProps, IPost } from "@/models"
+import { copyClipboardPost, getUnlockFormattedDays, shouldUnlockPost } from "@/utils"
 import { clsx } from "clsx"
 import { useEffect, useState } from "react"
 import { PostContent, PostFooter, PostHeader } from "./components"
@@ -21,6 +23,12 @@ export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
         setIsFocus(isTheSameHash)
     }, [])
 
+    const showUnlockMessage = (data?.unlock != null && shouldUnlockPost(data.publishDate, data?.unlock.unlockInYears))
+
+    const unlockFormattedTime = data?.unlock != null && getUnlockFormattedDays(data.publishDate, data?.unlock.unlockInYears)
+
+    console.log(unlockFormattedTime)
+    console.log(data?.unlock)
     return (
         <PostProvider {...{ data }}>
             <div
@@ -52,18 +60,44 @@ export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
                         </>
                     )
                 }
-                <article
-                    className={
-                        clsx(
-                            styles.post, "border rounded-md font-bold h-full",
-                            isPinned ? 'border-yellow-200/5' : 'border-neutral-800'
+                {
+                    showUnlockMessage
+                        ? (
+                            <>
+                                <article className="w-full p-2 rounded-md bg-zinc-800/5 border border-neutral-400/10">
+                                    <header className="flex items-center justify-between">
+                                        <div className="flex gap-1 items-center">
+                                            <h3 className="text-base font-semibold">
+                                                {data.title}
+                                            </h3>
+                                            <span className="text-[0.6rem] leading-[0.6rem] pt-[0.2rem]">Hace 1 dia</span>
+                                        </div>
+                                        <div>
+                                            <Button onClick={() => { copyClipboardPost(data.id) }} className="text-[0.6rem]">Copy link</Button>
+                                        </div>
+                                    </header>
+                                    <div className="flex flex-col">
+                                        <p className="text-xs text-zinc-100">El contenido de este post se desbloqueará {unlockFormattedTime}. Vuelve en {unlockFormattedTime} ;P.</p>
+                                        <p className="text-xs text-zinc-100">{data?.unlock?.message}</p>
+                                    </div>
+                                </article>
+                            </>
                         )
-                    }
-                >
-                    <PostHeader />
-                    <PostContent />
-                    <PostFooter />
-                </article>
+                        : (
+                            <article
+                                className={
+                                    clsx(
+                                        styles.post, "border rounded-md font-bold h-full",
+                                        isPinned ? 'border-yellow-200/5' : 'border-neutral-800'
+                                    )
+                                }
+                            >
+                                <PostHeader />
+                                <PostContent />
+                                <PostFooter />
+                            </article>
+                        )
+                }
             </div>
         </PostProvider>
     )
