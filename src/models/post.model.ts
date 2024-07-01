@@ -4,7 +4,7 @@ import type { ImageMetadata } from "astro"
 
 export interface Unlock {
     unlockInYears: number
-    message: string
+    message?: string
 }
 
 export interface IPost {
