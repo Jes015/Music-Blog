@@ -27,8 +27,6 @@ export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
 
     const unlockFormattedTime = data?.unlock != null && getUnlockFormattedDays(data.publishDate, data?.unlock.unlockInYears)
 
-    console.log(unlockFormattedTime)
-    console.log(data?.unlock)
     return (
         <PostProvider {...{ data }}>
             <div
