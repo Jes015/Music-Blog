@@ -1,0 +1,22 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro"
+import { getPostsEntries } from "@/utils"
+import { Post } from "./Post/Post"
+
+const data = await getPostsEntries("heart");
+---
+
+<MainLayout>
+    <h2 class="font-bold text-sm uppercase mt-24">Heart section</h2>
+    <div
+        class="text-xs"
+    >
+        <p>Escribir mis acciones diarias me hace ser consiente de mis errores. Lo aprendí cuando le escribía a una cuenta falsa por ig. La idea es sencilla, escribes lo que te pasa cada 2 o 4 días, lo lees, intentas entender, intentas buscar problemas en tus acciones y intentas darles una solución.</p>
+        <p>Me ayudó mucho en su tiempo y cualquier persona que no sea feliz necesita que esto se vuelva un habito.</p>
+    </div>
+    {
+        data
+            .sort((a, b) => b.publishDate - a.publishDate)
+            .map((post) => <Post data={post} client:load />)
+    }
+</MainLayout>

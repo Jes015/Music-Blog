@@ -52,6 +52,7 @@ const goalsCollection = defineCollection({
 
 export const collections = {
     posts: postsCollection,
+    heart: postsCollection,
     publishers: publisherCollection,
     goals: goalsCollection
 }
