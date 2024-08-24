@@ -29,7 +29,7 @@ export const PostHeader: BaseComponentType = () => {
                 <h3
                     className={
                         clsx(
-                            "font-semibold",
+                            "font-semibold leading-4",
                             data.title.length > 50 ? 'text-xs text-balance' : 'text-base text-pretty'
                         )
                     }

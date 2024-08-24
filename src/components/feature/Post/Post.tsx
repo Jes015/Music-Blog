@@ -65,7 +65,7 @@ export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
                                 <article className="w-full p-2 rounded-md bg-zinc-800/5 border border-neutral-400/10">
                                     <header className="flex items-center justify-between">
                                         <div className="flex gap-1 items-center">
-                                            <h3 className="text-base font-semibold">
+                                            <h3 className="text-base font-semibold leading-3">
                                                 {data.title}
                                             </h3>
                                             <span className="text-[0.6rem] leading-[0.6rem] pt-[0.2rem]">Hace 1 dia</span>
