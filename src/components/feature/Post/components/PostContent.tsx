@@ -22,7 +22,7 @@ export const PostContent: BaseComponentType = () => {
                     {
                         data.images.map((image, index) => (
                             <Carousel.Item key={image.src + index}>
-                                <Image src={image.src} alt={`${data.title} image ${index}`} height="288px" width="100%" />
+                                <Image src={image.src} alt={`${data.title} image ${index}`} height="288px" width="100%" lazy />
                             </Carousel.Item>
                         ))
                     }
