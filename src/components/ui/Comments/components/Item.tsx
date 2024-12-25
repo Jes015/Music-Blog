@@ -50,11 +50,7 @@ export const Item: BaseComponentType = ({ children, ...props }) => {
                 {
                     showComments &&
                     <div>
-                        {
-                            Math.floor(Math.random() * 2) + 1 === 1 && (
-                                Array(Math.floor(Math.random() * 10) + 1).fill(null).map(() => (<Item>{children}</Item>))
-                            )
-                        }
+                        Sección no disponible.
                     </div>
                 }
 
