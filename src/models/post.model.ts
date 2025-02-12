@@ -16,6 +16,7 @@ export interface IPost {
     publisher: IPublisher
     images?: ImageMetadata[] | null
     unlock?: Unlock
+    valor?: boolean
 }
 
 export type TPostPartial = Partial<IPost>

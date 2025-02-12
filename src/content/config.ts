@@ -11,7 +11,8 @@ const postsSchema = (image: ImageFunction) => z.object({
     unlock: z.object({
         unlockInYears: z.number(),
         message: z.string().optional()
-    }).optional()
+    }).optional(),
+    valor: z.boolean().optional()
 })
 
 const publisherSchema = z.object({
