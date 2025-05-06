@@ -1,6 +1,6 @@
 import { Avatar, Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
-import { copyClipboardPost, getTimeAgo } from "@/utils"
+import { copyClipboardPost } from "@/utils"
 import clsx from "clsx"
 import { usePostContext } from "../services/context"
 
@@ -39,7 +39,7 @@ export const PostHeader: BaseComponentType = () => {
                 <span
                     className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0 pt-[0.18rem]"
                 >
-                    {getTimeAgo(data.publishDate)}
+                    {/* {getTimeAgo(data.publishDate)} */ new Date(data.publishDate).toDateString().slice(4)}
                 </span>
             </div>
             <div
