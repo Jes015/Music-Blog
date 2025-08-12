@@ -5,5 +5,6 @@
     "content": "Voy a guardar en un drive todas las imágenes que me gustan mucho. La mayor <a href=\"https://drive.google.com/drive/folders/1bVaksBc2BZuEcM4Uhv9siCV23YSo5nTQ?usp=sharing\" target=\"_blank\">Click para ver</a><br>Ayer nació una flor en mi patio, hoy murió. Me di cuenta de lo corta que es la vida y decidí guardar en internet las imágenes de esas flores que nunca volverás a ver, pero que fueron muy bonitas mientras estaban vivas.",
     "likes": 1,
     "publisher": "j-oyola-baby-la-maravilla",
-    "images": ["./album-de-fotos.jpg"]
+    "images": ["./album-de-fotos.jpg"],
+    "valor": true
 }
