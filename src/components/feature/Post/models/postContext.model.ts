@@ -11,6 +11,7 @@ export const defaultPostContextValues: PostContext = {
         id: '9ec90306-6b6e-4dcf-bd55-f56beb9f5daa',
         likes: 30048434,
         publishDate: 23424,
+        spotifyUrl: '',
         publisher: {
             name: 'Jes015',
             description: 'HOla',

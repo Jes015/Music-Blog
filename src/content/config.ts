@@ -12,7 +12,8 @@ const postsSchema = (image: ImageFunction) => z.object({
         unlockInYears: z.number(),
         message: z.string().optional()
     }).optional(),
-    valor: z.boolean().optional()
+    valor: z.boolean().optional(),
+    spotifyUrl: z.string().optional()
 })
 
 const publisherSchema = z.object({

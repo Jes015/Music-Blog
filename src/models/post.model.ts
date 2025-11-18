@@ -11,6 +11,7 @@ export interface IPost {
     id: UUID
     title: string
     content: string
+    spotifyUrl?: string
     publishDate: number
     likes: number
     publisher: IPublisher

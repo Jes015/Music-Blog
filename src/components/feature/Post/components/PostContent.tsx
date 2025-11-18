@@ -32,6 +32,21 @@ export const PostContent: BaseComponentType = () => {
                     </Carousel.Controls>
                 </Carousel>
             }
+            {data.spotifyUrl && (
+                <div className="w-full px-1 mt-3 mb-1"> 
+                    <iframe 
+                        style={{ borderRadius: '12px' }} 
+                        src={data.spotifyUrl} 
+                        width="100%" 
+                        height="80" 
+                        title="Spotify Player"
+                        frameBorder="0" 
+                        allowFullScreen 
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                        loading="lazy"
+                    />
+                </div>
+            )}
             <div
                 className={
                     clsx(
