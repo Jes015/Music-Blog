@@ -17,7 +17,7 @@ sortedPosts.forEach((post, index) => {
 const postsMapJSON = JSON.stringify(postPageMap)
 ---
 
-<script define:vars={{ postsMapJSON }}>
+<script is:inline define:vars={{ postsMapJSON }}>
     document.addEventListener('astro:page-load', () => {
         const hash = window.location.hash.substring(1); // Remove '#'
         if (!hash) return;

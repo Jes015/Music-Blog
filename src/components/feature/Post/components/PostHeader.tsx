@@ -21,9 +21,10 @@ export const PostHeader: BaseComponentType = () => {
                 <Avatar
                     avatarImageProps={{
                         src: data.publisher.imageURL,
+                        alt: `Profile picture of ${data.publisher.name}`
                     }}
                     avatarFallback={{
-                        children: data.publisher.name.at(-1)
+                        children: data.publisher.name.at(0)
                     }}
                 />
                 <h3

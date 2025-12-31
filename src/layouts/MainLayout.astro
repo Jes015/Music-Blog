@@ -23,8 +23,9 @@ const postsMapJSON = JSON.stringify(postPageMap)
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content={Astro.props.description || "Blog de música de Jesús Oyola. Historias, pensamientos y canciones favoritas."} />
 		<link rel="shortcut icon" href="https://files.kick.com/emotes/2251020/fullsize" type="image/x-icon">
-		<title>J Oyola - A legend live history</title>
+		<title>{Astro.props.title || "J Oyola - A legend live history"}</title>
         <ViewTransitions />
 	</head>
 	<body class="bg-neutral-900 text-white overflow-x-hidden">
@@ -50,7 +51,7 @@ const postsMapJSON = JSON.stringify(postPageMap)
 		});
 	</script>
 
-    <script define:vars={{ postsMapJSON }}>
+    <script is:inline define:vars={{ postsMapJSON }}>
         document.addEventListener('astro:page-load', () => {
             const hash = window.location.hash.substring(1); // Remove '#'
             if (!hash) return;

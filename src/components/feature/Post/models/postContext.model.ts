@@ -2,6 +2,7 @@ import type { IPost } from "@/models"
 
 export interface PostContext {
     data: IPost
+    priority?: boolean
 }
 
 export const defaultPostContextValues: PostContext = {

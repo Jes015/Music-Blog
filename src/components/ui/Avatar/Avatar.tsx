@@ -1,7 +1,7 @@
 import { AvatarFallback, AvatarImage, Avatar as DefaultAvatar, type AvatarFallbackProps, type AvatarImageProps, type AvatarProps as DefaultAvatarProps } from "@radix-ui/react-avatar"
 
 interface AvatarProps extends DefaultAvatarProps {
-    avatarImageProps: AvatarImageProps
+    avatarImageProps: AvatarImageProps & { alt?: string }
     avatarFallback: AvatarFallbackProps
 }
 

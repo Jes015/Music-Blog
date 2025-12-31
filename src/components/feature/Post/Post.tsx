@@ -11,9 +11,10 @@ import { PostProvider } from "./services/context/post.provider"
 interface PostProps extends BaseComponentProps {
     data: IPost
     isPinned?: boolean
+    priority?: boolean
 }
 
-export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
+export const Post: React.FC<PostProps> = ({ data, isPinned, priority = false }) => {
     // i would use this logic with out react methods but astro makes SSG and don't let me do it because of the location var
     const [isFocus, setIsFocus] = useState(false)
 
@@ -28,7 +29,7 @@ export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
     const unlockFormattedTime = data?.unlock != null && getUnlockFormattedDays(data.publishDate, data?.unlock.unlockInYears)
 
     return (
-        <PostProvider {...{ data }}>
+        <PostProvider {...{ data, priority }}>
             <div
                 id={data.id}
                 data-valor={data.valor ? "true" : "false"}

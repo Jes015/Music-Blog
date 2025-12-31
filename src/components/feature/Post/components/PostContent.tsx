@@ -6,7 +6,7 @@ import { clsx } from "clsx"
 import { usePostContext } from "../services/context/"
 
 export const PostContent: BaseComponentType = () => {
-    const { data } = usePostContext()
+    const { data, priority } = usePostContext()
 
     return (
         <div
@@ -22,7 +22,13 @@ export const PostContent: BaseComponentType = () => {
                     {
                         data.images.map((image, index) => (
                             <Carousel.Item key={image.src + index}>
-                                <Image src={image.src} alt={`${data.title} image ${index}`} height="288px" width="100%" lazy />
+                                <Image 
+                                    src={image.src} 
+                                    alt={`${data.title} image ${index}`} 
+                                    height="288px" 
+                                    width="100%" 
+                                    lazy={!(priority && index === 0)} 
+                                />
                             </Carousel.Item>
                         ))
                     }
@@ -40,10 +46,9 @@ export const PostContent: BaseComponentType = () => {
                         width="100%" 
                         height="80" 
                         title="Spotify Player"
-                        frameBorder="0" 
                         allowFullScreen 
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                        loading="lazy"
+                        loading={priority ? "eager" : "lazy"}
                     />
                 </div>
             )}

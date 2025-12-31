@@ -1,6 +1,6 @@
 import type { BaseComponentProps, UUID } from "@/models"
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react"
-import { useRef, useState, type FC, type LegacyRef } from "react"
+import { useEffect, useRef, useState, type FC, type LegacyRef } from "react"
 
 interface ParagraphProps extends BaseComponentProps {
     maxHeight?: string
@@ -15,15 +15,40 @@ export const Paragraph: FC<ParagraphProps> = ({ postId, maxHeight, content, chil
 
     const handleOnClickToShowMore = () => {
         setDisplayLargeText((state) => {
-
             if (state) {
                 const containerElement = document.getElementById(postId)
                 containerElement?.scrollIntoView({ behavior: 'smooth' })
             }
-
             return !state
         })
     }
+
+    // Improve accessibility for generated links
+    useEffect(() => {
+        if (!paragraphRef.current) return
+
+        const links = paragraphRef.current.querySelectorAll('a')
+        
+        links.forEach((link) => {
+            // Check for generic text
+            const text = link.innerText.toLowerCase().trim()
+            if (["click aquí", "click aqui", "aquí", "aqui", "click here"].some(t => text.includes(t))) {
+                const href = link.getAttribute('href')
+                // Try to get a meaningful name from the href
+                const resourceName = href?.split('/').pop()?.split('.')[0]?.replace(/-/g, ' ') || 'recurso'
+                
+                if (!link.hasAttribute('aria-label')) {
+                    link.setAttribute('aria-label', `Ir a ${resourceName}`)
+                    link.title = `Ir a ${resourceName}`
+                }
+            }
+            
+            // Ensure external links open in new tab securely
+            if (link.getAttribute('target') === '_blank') {
+                link.setAttribute('rel', 'noopener noreferrer')
+            }
+        })
+    }, [content])
 
     return (
         <div

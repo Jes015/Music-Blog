@@ -21,9 +21,28 @@ if (pinnedPost) {
         <PostSearch client:idle />
         <PostFilter client:idle />
     </div>
-    {pinnedPost && <Post data={pinnedPost} isPinned client:load />}
+    {pinnedPost && <Post data={pinnedPost} isPinned priority client:load />}
     {
-        posts
-            .map((post) => <Post data={post} client:load />)
+        posts.map((post, index) => {
+            const isFirst = index === 0; 
+            
+            if (isFirst) {
+                 return (
+                    <Post 
+                        data={post} 
+                        priority={true} 
+                        client:load 
+                    />
+                )
+            }
+
+            return (
+                <Post 
+                    data={post} 
+                    priority={false} 
+                    client:visible={{ rootMargin: "200px" }} 
+                />
+            )
+        })
     }
 </SectionLayout>
