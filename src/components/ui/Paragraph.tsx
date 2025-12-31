@@ -75,7 +75,7 @@ export const Paragraph: FC<ParagraphProps> = ({ postId, maxHeight, content, chil
             {...props}
         >
             <div
-                className="text-gray-300 mb-4 whitespace-break-spaces [&_a]:text-blue-300 [&_a]:underline [&_a]:hover:text-blue-200"
+                className="text-gray-300 mb-4 whitespace-break-spaces [&_a]:text-blue-200 [&_a]:font-medium [&_a]:underline [&_a]:decoration-blue-400 [&_a]:underline-offset-2 [&_a]:hover:text-white"
                 dangerouslySetInnerHTML={{ __html: content }}
             />
             {
