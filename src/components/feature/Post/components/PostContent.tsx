@@ -48,7 +48,7 @@ export const PostContent: BaseComponentType = () => {
                         title="Spotify Player"
                         allowFullScreen 
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                        loading={priority ? "eager" : "lazy"}
+                        loading="lazy"
                     />
                 </div>
             )}
