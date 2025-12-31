@@ -23,7 +23,7 @@ const { page, pinnedPost } = Astro.props
 <MainLayout title={`Page ${page.currentPage} | Music Blog`}>
 	<JOyolaBabyTheLegend />
 	<div class="flex flex-col">
-		<IndexPostsSection posts={page.data} pinnedPost={pinnedPost as IPost} className="flex-shrink-0 flex-grow [flex-basis:100%]" />
+		<IndexPostsSection posts={page.data} pinnedPost={page.currentPage === 1 ? pinnedPost as IPost : undefined} currentPage={page.currentPage} className="flex-shrink-0 flex-grow [flex-basis:100%]" />
         
         <Pagination page={page} />
 	</div>

@@ -7,16 +7,17 @@ interface Props {
     className?: string;
     posts: IPost[];
     pinnedPost?: IPost;
+    currentPage?: number;
 }
 
-const { className, posts, pinnedPost } = Astro.props;
+const { className, posts, pinnedPost, currentPage = 1 } = Astro.props;
 
 if (pinnedPost) {
     pinnedPost.id = "pinned-pinned-pinned-pinned-pinned";
 }
 ---
 
-<SectionLayout className={className} title="Posts">
+<SectionLayout className={className} title={currentPage > 1 ? `Posts (Página ${currentPage})` : "Posts"}>
     <div slot="rightNode" class="flex gap-2 items-center">
         <PostSearch client:idle />
         <PostFilter client:idle />
