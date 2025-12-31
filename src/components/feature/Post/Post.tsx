@@ -31,6 +31,7 @@ export const Post: React.FC<PostProps> = ({ data, isPinned }) => {
         <PostProvider {...{ data }}>
             <div
                 id={data.id}
+                data-valor={data.valor ? "true" : "false"}
                 className={
                     [
                         "relative w-full flex flex-col gap-2 pt-2",

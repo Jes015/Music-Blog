@@ -3,6 +3,19 @@ import '@fontsource/geist-sans/400.css'
 import '@fontsource/geist-sans/500.css'
 import '@fontsource/geist-sans/600.css'
 import '@fontsource/geist-sans/700.css'
+import { ViewTransitions } from 'astro:transitions';
+import { getPostsEntries } from "@/utils"
+
+// Post Locator Map Generation
+const allPosts = await getPostsEntries('posts')
+const sortedPosts = allPosts.sort((a, b) => b.publishDate - a.publishDate)
+const pageSize = 8
+const postPageMap: Record<string, number> = {}
+sortedPosts.forEach((post, index) => {
+    const pageNumber = Math.floor(index / pageSize) + 1
+    postPageMap[post.id] = pageNumber
+})
+const postsMapJSON = JSON.stringify(postPageMap)
 ---
 
 <!doctype html>
@@ -12,6 +25,7 @@ import '@fontsource/geist-sans/700.css'
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="shortcut icon" href="https://files.kick.com/emotes/2251020/fullsize" type="image/x-icon">
 		<title>J Oyola - A legend live history</title>
+        <ViewTransitions />
 	</head>
 	<body class="bg-neutral-900 text-white overflow-x-hidden">
 		<main class="flex flex-col items-center">
@@ -20,6 +34,66 @@ import '@fontsource/geist-sans/700.css'
 				<slot />
 			</div>
 		</main>
+	<script>
+		document.addEventListener('astro:page-load', () => {
+			const path = window.location.pathname;
+            const hash = window.location.hash;
+			// Check if we are on a likely paginated page (ends in a number or is the customized highlights route)
+			// But EXCLUDE the strict root "/"
+			const isPaginated = (path !== '/' && /\/\d+$/.test(path)) || path.includes('/destacados');
+			const postsTop = document.getElementById('posts-top');
+
+            // Only scroll to top of posts if we are paginating AND there is NO specific hash target (deep link)
+			if (isPaginated && postsTop && !hash) {
+				postsTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		});
+	</script>
+
+    <script define:vars={{ postsMapJSON }}>
+        document.addEventListener('astro:page-load', () => {
+            const hash = window.location.hash.substring(1); // Remove '#'
+            if (!hash) return;
+
+            console.log('[PostLocator] Checking for post:', hash);
+
+            // Verify if the element is already on the page
+            const element = document.getElementById(hash);
+            if (element) {
+                console.log('[PostLocator] Element found on current page. Scrolling...');
+                element.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            console.log('[PostLocator] Element NOT found. Checking map...');
+
+            try {
+                const map = JSON.parse(postsMapJSON);
+                const targetPage = map[hash];
+
+                console.log('[PostLocator] Target Page from map:', targetPage);
+
+                if (targetPage) {
+                    const targetPath = targetPage === 1 ? '/' : `/${targetPage}`;
+                    
+                    console.log(`[PostLocator] Redirecting from ${window.location.pathname} to ${targetPath}#${hash}`);
+
+                    // Avoid infinite redirect if we are already on that page but element is missing
+                    if (window.location.pathname === targetPath || (targetPage === 1 && window.location.pathname === '/')) {
+                        console.warn('[PostLocator] ALREADY ON TARGET PAGE but element not found. Rendering issue?');
+                        return;
+                    }
+
+                    // Redirect
+                    window.location.href = `${targetPath}#${hash}`;
+                } else {
+                    console.warn('[PostLocator] Post ID not found in map.');
+                }
+            } catch (e) {
+                console.error('[PostLocator] Error parsing map', e);
+            }
+        });
+    </script>
 	</body>
 </html>
 

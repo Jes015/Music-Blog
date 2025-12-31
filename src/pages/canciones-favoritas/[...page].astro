@@ -1,0 +1,72 @@
+---
+import { SectionLayout } from "@/components/layouts"
+import { Post, PostFilter } from "@/components/feature"
+import MainLayout from "@/layouts/MainLayout.astro"
+import { getPostsEntries } from "@/utils"
+import type { GetStaticPaths } from "astro"
+
+export const getStaticPaths = (async ({ paginate }) => {
+    const allPosts = await getPostsEntries('posts')
+    
+    // Filter by 'favoriteSong'
+    const favoritePosts = allPosts.filter(post => post.favoriteSong === true)
+
+    return paginate(favoritePosts.sort((a, b) => b.publishDate - a.publishDate), {
+        pageSize: 8
+    })
+}) satisfies GetStaticPaths
+
+const { page } = Astro.props
+---
+
+<MainLayout>
+    <div class="flex flex-col gap-10 w-full mb-10">
+        <SectionLayout title="Canciones Favoritas">
+            <div slot="rightNode" class="flex items-center gap-2">
+			    {/* Adding PostFilter to allow navigation back to home or other filters */}
+                <PostFilter client:load /> 
+            </div>
+            
+            <div class="flex flex-col gap-8 min-h-[50vh]">
+                {
+                    page.data.length > 0 ? (
+                        page.data.map((post) => (
+                            <Post data={post} client:load />
+                        ))
+                    ) : (
+                        <div class="flex flex-col items-center justify-center py-20 text-neutral-500">
+                            <p class="text-lg">No hay canciones favoritas aún.</p>
+                        </div>
+                    )
+                }
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center mt-8 gap-2">
+                {page.url.prev ? (
+                    <a href={page.url.prev} class="px-4 py-2 text-sm rounded-md border border-neutral-800 hover:bg-neutral-800 transition-colors">
+                        Anterior
+                    </a>
+                ) : (
+                    <span class="px-4 py-2 text-sm rounded-md border border-neutral-800 opacity-50 cursor-not-allowed">
+                        Anterior
+                    </span>
+                )}
+                
+                <span class="px-4 py-2 text-sm text-neutral-500">
+                    Página {page.currentPage} de {page.lastPage}
+                </span>
+
+                {page.url.next ? (
+                    <a href={page.url.next} class="px-4 py-2 text-sm rounded-md border border-neutral-800 hover:bg-neutral-800 transition-colors">
+                        Siguiente
+                    </a>
+                ) : (
+                    <span class="px-4 py-2 text-sm rounded-md border border-neutral-800 opacity-50 cursor-not-allowed">
+                        Siguiente
+                    </span>
+                )}
+            </div>
+        </SectionLayout>
+    </div>
+</MainLayout>

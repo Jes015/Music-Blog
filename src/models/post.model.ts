@@ -18,6 +18,7 @@ export interface IPost {
     images?: ImageMetadata[] | null
     unlock?: Unlock
     valor?: boolean
+    favoriteSong?: boolean
 }
 
 export type TPostPartial = Partial<IPost>

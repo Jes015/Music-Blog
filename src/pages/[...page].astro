@@ -1,0 +1,30 @@
+---
+import IndexPostsSection from "@/components/feature/IndexPostsSection.astro"
+import JOyolaBabyTheLegend from "@/components/feature/JOyolaBabyTheLegend.astro"
+import MainLayout from "@/layouts/MainLayout.astro"
+import Pagination from "@/components/ui/Pagination.astro"
+import "@/styles/global.styles.css"
+import { getPostsEntries } from "@/utils"
+import type { GetStaticPaths } from "astro"
+import type { IPost } from "@/models"
+
+export const getStaticPaths = (async ({ paginate }) => {
+    const allPosts = await getPostsEntries('posts')
+    const sortedPosts = allPosts.sort((a, b) => b.publishDate - a.publishDate)
+    
+	const pinnedPost = allPosts.find((post) => post.id === "6e12f930-fd57-4f7d-a653-abfe3a60c0ff")
+
+    return paginate(sortedPosts, { pageSize: 8, props: { pinnedPost } })
+}) satisfies GetStaticPaths
+
+const { page, pinnedPost } = Astro.props
+---
+
+<MainLayout title={`Page ${page.currentPage} | Music Blog`}>
+	<JOyolaBabyTheLegend />
+	<div class="flex flex-col">
+		<IndexPostsSection posts={page.data} pinnedPost={pinnedPost as IPost} className="flex-shrink-0 flex-grow [flex-basis:100%]" />
+        
+        <Pagination page={page} />
+	</div>
+</MainLayout>

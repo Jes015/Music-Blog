@@ -13,6 +13,7 @@ const postsSchema = (image: ImageFunction) => z.object({
         message: z.string().optional()
     }).optional(),
     valor: z.boolean().optional(),
+    favoriteSong: z.boolean().optional(),
     spotifyUrl: z.string().optional()
 })
 

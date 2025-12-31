@@ -1,30 +1,29 @@
 ---
-interface Props {
-    className?: string;
-}
-
-import { Post } from "@/components/feature"
+import { Post, PostSearch, PostFilter } from "@/components/feature"
 import { SectionLayout } from "@/components/layouts"
 import type { IPost } from "@/models"
-import { getPostsEntries } from "@/utils"
 
-const data = await getPostsEntries('posts')
+interface Props {
+    className?: string;
+    posts: IPost[];
+    pinnedPost?: IPost;
+}
 
-const felicidadPost = structuredClone(
-    data.find(
-        (post) => post.id === "6e12f930-fd57-4f7d-a653-abfe3a60c0ff",
-    ) as IPost,
-);
-felicidadPost.id = "pinned-pinned-pinned-pinned-pinned";
+const { className, posts, pinnedPost } = Astro.props;
 
-const { className } = Astro.props;
+if (pinnedPost) {
+    pinnedPost.id = "pinned-pinned-pinned-pinned-pinned";
+}
 ---
 
-<SectionLayout className={[className, "pb-72"].join(" ")} title="Posts">
-    <Post data={felicidadPost} isPinned client:load />
+<SectionLayout className={className} title="Posts">
+    <div slot="rightNode" class="flex gap-2 items-center">
+        <PostSearch client:idle />
+        <PostFilter client:idle />
+    </div>
+    {pinnedPost && <Post data={pinnedPost} isPinned client:load />}
     {
-        data
-            .sort((a, b) => b.publishDate - a.publishDate)
+        posts
             .map((post) => <Post data={post} client:load />)
     }
 </SectionLayout>
