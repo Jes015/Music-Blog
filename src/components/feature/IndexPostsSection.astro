@@ -21,7 +21,7 @@ if (pinnedPost) {
         <PostSearch client:idle />
         <PostFilter client:idle />
     </div>
-    {pinnedPost && <Post data={pinnedPost} isPinned priority client:load />}
+    {pinnedPost && <Post data={pinnedPost} isPinned priority initialUnlock={false} client:load />}
     {
         posts.map((post, index) => {
             const isFirst = index === 0; 
@@ -31,6 +31,7 @@ if (pinnedPost) {
                     <Post 
                         data={post} 
                         priority={true} 
+                        initialUnlock={false}
                         client:load 
                     />
                 )
@@ -40,6 +41,7 @@ if (pinnedPost) {
                 <Post 
                     data={post} 
                     priority={false} 
+                    initialUnlock={false}
                     client:visible={{ rootMargin: "200px" }} 
                 />
             )

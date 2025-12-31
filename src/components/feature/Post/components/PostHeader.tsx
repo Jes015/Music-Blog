@@ -2,6 +2,7 @@ import { Avatar, Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
 import { copyClipboardPost } from "@/utils"
 import clsx from "clsx"
+import { useEffect, useState } from "react"
 import { usePostContext } from "../services/context"
 
 export const PostHeader: BaseComponentType = () => {
@@ -40,7 +41,7 @@ export const PostHeader: BaseComponentType = () => {
                 <span
                     className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0 pt-[0.18rem]"
                 >
-                    {/* {getTimeAgo(data.publishDate)} */ new Date(data.publishDate).toLocaleDateString()}
+                    <ClientDate date={data.publishDate} />
                 </span>
             </div>
             <div
@@ -52,4 +53,14 @@ export const PostHeader: BaseComponentType = () => {
             </div>
         </header>
     )
+}
+
+const ClientDate = ({ date }: { date: number }) => {
+    const [formattedDate, setFormattedDate] = useState<string>("")
+
+    useEffect(() => {
+        setFormattedDate(new Date(date).toLocaleDateString())
+    }, [date])
+
+    return <>{formattedDate}</>
 }

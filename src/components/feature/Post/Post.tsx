@@ -12,9 +12,10 @@ interface PostProps extends BaseComponentProps {
     data: IPost
     isPinned?: boolean
     priority?: boolean
+    initialUnlock?: boolean
 }
 
-export const Post: React.FC<PostProps> = ({ data, isPinned, priority = false }) => {
+export const Post: React.FC<PostProps> = ({ data, isPinned, priority = false, initialUnlock = false }) => {
     // i would use this logic with out react methods but astro makes SSG and don't let me do it because of the location var
     const [isFocus, setIsFocus] = useState(false)
 
@@ -24,7 +25,7 @@ export const Post: React.FC<PostProps> = ({ data, isPinned, priority = false }) 
         setIsFocus(isTheSameHash)
     }, [])
 
-    const [showUnlockMessage, setShowUnlockMessage] = useState(false)
+    const [showUnlockMessage, setShowUnlockMessage] = useState(initialUnlock)
     const [unlockFormattedTime, setUnlockFormattedTime] = useState<string | false>(false)
 
     useEffect(() => {

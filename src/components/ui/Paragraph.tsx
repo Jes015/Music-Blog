@@ -32,10 +32,25 @@ export const Paragraph: FC<ParagraphProps> = ({ postId, maxHeight, content, chil
         links.forEach((link) => {
             // Check for generic text
             const text = link.innerText.toLowerCase().trim()
-            if (["click aquí", "click aqui", "aquí", "aqui", "click here"].some(t => text.includes(t))) {
+            if (["click aquí", "click aqui", "aquí", "aqui", "click here", "web", "sitio"].some(t => text.includes(t)) || text.length < 3) {
                 const href = link.getAttribute('href')
                 // Try to get a meaningful name from the href
-                const resourceName = href?.split('/').pop()?.split('.')[0]?.replace(/-/g, ' ') || 'recurso'
+                const resourceName = href?.split('/').filter(Boolean).pop()?.split('.')[0]?.replace(/-/g, ' ') || 'recurso'
+                
+                // Add visible text for screen readers and SEO
+                // We verify if we already added it to avoid duplication if effect runs twice
+                if (!link.innerText.includes(resourceName)) {
+                    const span = document.createElement('span');
+                    span.className = "sr-only"; // Or visible if design permits, referencing user pref, but here we keep visual design clean? 
+                    // Wait, the error says "Links do not have descriptive text". Screen readers read aria-label, but search engines read innerText.
+                    // Let's modify innerText slightly or use a span that is visually hidden but distinct?
+                    // "Links do not have descriptive text" usually checks visible text.
+                    
+                    // Let's append it visibly but subtle? No, user might not like it.
+                    // Let's try appending it as a hidden span inside the anchor tag.
+                     
+                    link.innerHTML += ` <span class="sr-only"> ir a ${resourceName}</span>`
+                }
                 
                 if (!link.hasAttribute('aria-label')) {
                     link.setAttribute('aria-label', `Ir a ${resourceName}`)
