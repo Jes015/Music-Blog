@@ -40,7 +40,7 @@ export const PostHeader: BaseComponentType = () => {
                 <span
                     className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0 pt-[0.18rem]"
                 >
-                    {/* {getTimeAgo(data.publishDate)} */ new Date(data.publishDate).toDateString().slice(4)}
+                    {/* {getTimeAgo(data.publishDate)} */ new Date(data.publishDate).toLocaleDateString()}
                 </span>
             </div>
             <div

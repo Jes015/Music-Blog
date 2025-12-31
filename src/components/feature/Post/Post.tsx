@@ -24,9 +24,16 @@ export const Post: React.FC<PostProps> = ({ data, isPinned, priority = false }) 
         setIsFocus(isTheSameHash)
     }, [])
 
-    const showUnlockMessage = (data?.unlock != null && shouldUnlockPost(data.publishDate, data?.unlock.unlockInYears))
+    const [showUnlockMessage, setShowUnlockMessage] = useState(false)
+    const [unlockFormattedTime, setUnlockFormattedTime] = useState<string | false>(false)
 
-    const unlockFormattedTime = data?.unlock != null && getUnlockFormattedDays(data.publishDate, data?.unlock.unlockInYears)
+    useEffect(() => {
+        if (data?.unlock != null) {
+            const shouldUnlock = shouldUnlockPost(data.publishDate, data?.unlock.unlockInYears)
+            setShowUnlockMessage(shouldUnlock)
+            setUnlockFormattedTime(getUnlockFormattedDays(data.publishDate, data?.unlock.unlockInYears))
+        }
+    }, [data])
 
     return (
         <PostProvider {...{ data, priority }}>
