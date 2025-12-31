@@ -55,6 +55,7 @@ export const Image: React.FC<IProps> = ({ height, width, src, alt, lazy = false 
                 }
                 ref={imageRef as LegacyRef<HTMLImageElement>}
                 loading={lazy ? 'lazy' : 'eager'}
+                fetchPriority={lazy ? undefined : 'high'}
                 {...{ src, alt }}
             // onLoad={} use onLoad only with client:only="react" otherwise onLoad will not work if it's the first time that astro load the astro islands
             />

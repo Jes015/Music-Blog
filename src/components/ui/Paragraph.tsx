@@ -56,11 +56,11 @@ export const Paragraph: FC<ParagraphProps> = ({ postId, maxHeight, content, chil
             style={{
                 maxHeight: displayLargeText ? '100%' : maxHeight ?? '100%'
             }}
+            ref={paragraphRef as LegacyRef<HTMLDivElement>}
             {...props}
         >
             <div
-                ref={paragraphRef as LegacyRef<HTMLDivElement>}
-                className="text-zinc-200 font-medium text-start text-pretty"
+                className="text-gray-300 mb-4 whitespace-break-spaces [&_a]:text-blue-300 [&_a]:underline [&_a]:hover:text-blue-200"
                 dangerouslySetInnerHTML={{ __html: content }}
             />
             {
