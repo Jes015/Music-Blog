@@ -16,6 +16,7 @@ sortedPosts.forEach((post, index) => {
     postPageMap[post.id] = pageNumber
 })
 const postsMapJSON = JSON.stringify(postPageMap)
+import Galaxy from "@/components/Galaxy"
 ---
 
 <!doctype html>
@@ -30,8 +31,27 @@ const postsMapJSON = JSON.stringify(postPageMap)
 	</head>
 	<body class="bg-neutral-900 text-white overflow-x-hidden">
 		<main class="flex flex-col items-center">
-			<img src="/stars-wallpaper-squosh.webp" alt="faith background" class="z-0 fixed top-0 left-0 w-full select-none opacity-5 h-full object-cover aspect-auto blur-sm">
-			<div class="z-50 [width:96vw] sm:[width:60vw] md:[width:55vw] lg:[width:40vw] xl:[width:35vw] 2xl:[width:30vw]">
+			
+            <div class="fixed top-0 left-0 w-full h-full -z-10 bg-neutral-900">
+                <Galaxy 
+                    client:only="react"
+                    mouseInteraction={true}
+                    mouseRepulsion={true}
+                    density={1}
+                    glowIntensity={0.3}
+                    saturation={0}
+                    hueShift={140}
+                    twinkleIntensity={0.3}
+                    rotationSpeed={0.1}
+                    repulsionStrength={2}
+                    autoCenterRepulsion={0}
+                    starSpeed={0.5}
+                    speed={1}
+                />
+            </div>
+            {/* <img src="/stars-wallpaper-squosh.webp" alt="faith background" class="z-0 fixed top-0 left-0 w-full select-none opacity-5 h-full object-cover aspect-auto blur-sm"> */}
+			
+            <div class="z-50 [width:96vw] sm:[width:60vw] md:[width:55vw] lg:[width:40vw] xl:[width:35vw] 2xl:[width:30vw]">
 				<slot />
 			</div>
 		</main>
