@@ -1,4 +1,4 @@
-import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
+import { Color, Mesh, Program, Renderer, Triangle } from 'ogl';
 import { useEffect, useRef } from 'react';
 
 const vertexShader = `
@@ -186,6 +186,7 @@ interface GalaxyProps {
   repulsionStrength?: number;
   autoCenterRepulsion?: number;
   transparent?: boolean;
+  minWidth?: number;
 }
 
 export default function Galaxy({
@@ -205,6 +206,7 @@ export default function Galaxy({
   rotationSpeed = 0.1,
   autoCenterRepulsion = 0,
   transparent = true,
+  minWidth = 0,
   ...rest
 }: GalaxyProps) {
   const ctnDom = useRef<HTMLDivElement>(null);
@@ -215,6 +217,13 @@ export default function Galaxy({
 
   useEffect(() => {
     if (!ctnDom.current) return;
+    
+    // Mobile Performance Optimization
+    // If a minWidth is set and the window is smaller, do not initialize WebGL
+    if (minWidth > 0 && window.innerWidth < minWidth) {
+      return;
+    }
+
     const ctn = ctnDom.current;
     const renderer = new Renderer({
       alpha: transparent,
@@ -344,7 +353,8 @@ export default function Galaxy({
     rotationSpeed,
     repulsionStrength,
     autoCenterRepulsion,
-    transparent
+    transparent,
+    minWidth
   ]);
 
   return <div ref={ctnDom} className="w-full h-full relative" {...rest} />;
