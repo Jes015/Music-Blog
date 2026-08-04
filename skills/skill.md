@@ -76,6 +76,7 @@ La IA debe analizar el borrador del post y aplicar correcciones ortográficas y 
 ### Reglas de Puntuación:
 * **Vocativos:** Separar los vocativos mediante comas (ej. *"Sabes, me pasó algo curioso"*).
 * **Conjunción "Pero":** Anteponer siempre una coma antes de introducir la palabra "pero" si divide dos oraciones (ej. *"Escribir te hace olvidar, pero solo temporalmente"*).
+* **Signos prohibidos en publicaciones:** No usar punto y coma, dos puntos ni signos de exclamación de apertura o cierre. Esto incluye `;`, `:`, `¡` y `!`.
 
 ### Preservación del Tono del Autor:
 * **El término "super":** Se prefiere conservar como **super** sin tilde (ej. *super largo*, *super bonito*) para mantener la esencia del lenguaje del autor en el blog, excepto si el usuario explícitamente pide corregirlo a *súper*.
