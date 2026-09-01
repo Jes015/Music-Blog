@@ -217,14 +217,9 @@ export default function Galaxy({
 
   useEffect(() => {
     if (!ctnDom.current) return;
-    
-    // Mobile Performance Optimization
-    // If a minWidth is set and the window is smaller, do not initialize WebGL
-    if (minWidth > 0 && window.innerWidth < minWidth) {
-      return;
-    }
 
     const ctn = ctnDom.current;
+    const isMobile = window.innerWidth < 768;
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false
@@ -242,7 +237,8 @@ export default function Galaxy({
     let program: Program;
 
     function resize() {
-      const scale = 1;
+      // Mobile Performance Optimization: render at half resolution on small screens
+      const scale = window.innerWidth < 768 ? 0.5 : 1;
       renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
       if (program) {
         program.uniforms.uResolution.value = new Color(
