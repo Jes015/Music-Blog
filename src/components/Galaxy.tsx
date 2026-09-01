@@ -239,6 +239,9 @@ export default function Galaxy({
       // Mobile Performance Optimization: render at half resolution on small screens
       const scale = window.innerWidth < 768 ? 0.5 : 1;
       renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
+      // Force the canvas to visually fill 100% of the container regardless of internal resolution
+      gl.canvas.style.width = '100%';
+      gl.canvas.style.height = '100%';
       if (program) {
         program.uniforms.uResolution.value = new Color(
           gl.canvas.width,
