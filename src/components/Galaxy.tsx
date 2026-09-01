@@ -219,7 +219,6 @@ export default function Galaxy({
     if (!ctnDom.current) return;
 
     const ctn = ctnDom.current;
-    const isMobile = window.innerWidth < 768;
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false
