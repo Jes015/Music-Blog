@@ -77,6 +77,7 @@ const jsonLdString = nodes.length
 		<link rel="alternate" type="application/rss+xml" title={FEED.title} href={toAbsolute('/rss.xml', site)} />
 		<link rel="me" href={SOCIAL_LINKS.instagram} />
 		<link rel="me" href={SOCIAL_LINKS.youtube} />
+		<link rel="me" href={SOCIAL_LINKS.linkedin} />
 
 		<meta property="og:site_name" content={SITE_NAME} />
 		<meta property="og:locale" content={SITE_LOCALE} />
@@ -139,6 +140,8 @@ const jsonLdString = nodes.length
                         <a href={SOCIAL_LINKS.instagram} rel="me" class="underline hover:text-neutral-200">Instagram</a>
                         <span aria-hidden="true">·</span>
                         <a href={SOCIAL_LINKS.youtube} rel="me" class="underline hover:text-neutral-200">YouTube</a>
+                        <span aria-hidden="true">·</span>
+                        <a href={SOCIAL_LINKS.linkedin} rel="me" class="underline hover:text-neutral-200">LinkedIn</a>
                     </span>
                     <a href="https://papi.click/alertas/anime?ref=blog" class="underline hover:text-neutral-200">
                         Papi Notifications — avisos de anime, series y fútbol a tu WhatsApp o Telegram

@@ -15,6 +15,7 @@ export const SHOW_ADJACENT_POSTS = false
 export const SOCIAL_LINKS = {
   instagram: 'https://www.instagram.com/jesus.oyola.15',
   youtube: 'https://www.youtube.com/@jesus.oyola.15',
+  linkedin: 'https://www.linkedin.com/in/jesus-oyola/',
 } as const
 
 // Entidad única: se usa tal cual en TODAS las fichas JSON-LD.
@@ -25,7 +26,7 @@ export const PERSON = {
   description: 'Músico y beatmaker de Bogotá, Colombia.',
   city: 'Bogotá',
   country: 'CO',
-  sameAs: [SOCIAL_LINKS.instagram, SOCIAL_LINKS.youtube],
+  sameAs: [SOCIAL_LINKS.instagram, SOCIAL_LINKS.youtube, SOCIAL_LINKS.linkedin],
 } as const
 
 export const FEED = {
