@@ -9,6 +9,7 @@ import {
   demoteHeadings,
   htmlToPlain,
   isTestEntry,
+  personId,
   personNode,
   pickOgImage,
   toAbsolute,
@@ -101,6 +102,7 @@ const jsonLd = {
   inLanguage: 'es',
   image: imageUrls,
   author: personNode(site),
+  publisher: { '@id': personId(site) },
 }
 ---
 

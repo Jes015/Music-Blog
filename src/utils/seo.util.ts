@@ -103,6 +103,8 @@ export function personNode(site: SiteLike): JsonLd {
     name: PERSON.name,
     alternateName: [...PERSON.alternateName],
     url: toAbsolute('/', site),
+    // TODO: reemplazar por un retrato cuadrado real cuando exista (ayuda al Knowledge Graph).
+    image: toAbsolute('/og/default.png', site),
     jobTitle: PERSON.jobTitle,
     description: PERSON.description,
     address: { '@type': 'PostalAddress', addressLocality: PERSON.city, addressCountry: PERSON.country },
