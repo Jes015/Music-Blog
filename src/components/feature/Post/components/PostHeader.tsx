@@ -28,7 +28,7 @@ export const PostHeader: BaseComponentType = () => {
                         children: data.publisher.name.at(0)
                     }}
                 />
-                <h2
+                <h3
                     className={
                         clsx(
                             "font-semibold leading-4",
@@ -37,7 +37,7 @@ export const PostHeader: BaseComponentType = () => {
                     }
                 >
                     {data.title}
-                </h2>
+                </h3>
                 <span
                     className="text-[0.7rem] text-textTertiary font-normal flex-shrink-0 pt-[0.18rem]"
                 >

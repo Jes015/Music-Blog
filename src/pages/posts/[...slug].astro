@@ -1,51 +1,128 @@
 ---
-import { getCollection } from 'astro:content'
+import { SHOW_ADJACENT_POSTS } from '@/consts'
 import MainLayout from '@/layouts/MainLayout.astro'
+import {
+  buildPostDescription,
+  buildTitle,
+  canonicalFrom,
+  clamp,
+  demoteHeadings,
+  htmlToPlain,
+  isTestEntry,
+  personNode,
+  pickOgImage,
+  toAbsolute,
+} from '@/utils/seo.util'
+import { getCollection, type CollectionEntry } from 'astro:content'
 
-export async function getStaticPaths() {
-  const posts = await getCollection('posts')
-  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }))
+interface Neighbor {
+  id: string
+  title: string
+}
+interface Props {
+  entry: CollectionEntry<'posts'>
+  newer?: Neighbor
+  older?: Neighbor
+  seoTitle: string
 }
 
-const { entry } = Astro.props as { entry: any }
+export async function getStaticPaths() {
+  const posts = (await getCollection('posts')).sort((a, b) => b.data.publishDate - a.data.publishDate)
+
+  const dateShortOf = (publishDate: number) =>
+    new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeZone: 'America/Bogota' }).format(new Date(publishDate))
+  const slugLast = (id: string) => id.split('/').pop() ?? id
+
+  // Títulos finales únicos incluso cuando dos posts comparten título o su recorte a 60 coincide.
+  const collisions = (list: string[]): Set<string> => {
+    const count = new Map<string, number>()
+    for (const t of list) count.set(t, (count.get(t) ?? 0) + 1)
+    return new Set([...count].filter(([, n]) => n > 1).map(([t]) => t))
+  }
+
+  const pass1 = posts.map((post) => buildTitle(post.data.title))
+  const dupA = collisions(pass1)
+  const pass2 = posts.map((post, i) =>
+    dupA.has(pass1[i]) ? buildTitle(`${clamp(post.data.title, 30)} (${dateShortOf(post.data.publishDate)})`) : pass1[i],
+  )
+  const dupB = collisions(pass2)
+  const finalTitles = posts.map((post, i) =>
+    dupB.has(pass2[i]) ? buildTitle(`${clamp(post.data.title, 24)} · ${slugLast(post.id)}`) : pass2[i],
+  )
+
+  // Vecinos solo entre posts "listados" (sin entradas de prueba).
+  const listed = posts.filter((post) => !isTestEntry(post.id))
+  const position = new Map(listed.map((post, index) => [post.id, index]))
+
+  return posts.map((entry, i) => {
+    const index = position.get(entry.id)
+    const newer = index === undefined ? undefined : listed[index - 1]
+    const older = index === undefined ? undefined : listed[index + 1]
+    return {
+      params: { slug: entry.id },
+      props: {
+        entry,
+        newer: newer ? { id: newer.id, title: newer.data.title } : undefined,
+        older: older ? { id: older.id, title: older.data.title } : undefined,
+        seoTitle: finalTitles[i],
+      },
+    }
+  })
+}
+
+const { entry, newer, older, seoTitle } = Astro.props
 const { title, content, publishDate, images, spotifyUrl } = entry.data
+const site = Astro.site ?? new URL(Astro.url.origin)
 
-const plain = String(content ?? '')
-  .replace(/<br\s*\/?>/gi, ' ')
-  .replace(/<[^>]*>/g, ' ')
-  .replace(/&nbsp;/g, ' ')
-  .replace(/&amp;/g, '&')
-  .replace(/\s+/g, ' ')
-  .trim()
-const description = plain.slice(0, 155)
+const published = new Date(publishDate)
+const isoDate = published.toISOString()
+const dateFmtOptions = { timeZone: 'America/Bogota' } as const
+const dateFmt = new Intl.DateTimeFormat('es-CO', { dateStyle: 'long', ...dateFmtOptions }).format(published)
 
-const dateFmt = new Intl.DateTimeFormat('es-CO', {
-  dateStyle: 'long',
-  timeZone: 'America/Bogota',
-}).format(new Date(publishDate))
-const isoDate = new Date(publishDate).toISOString()
+const description = buildPostDescription(htmlToPlain(content), dateFmt, title)
+const pageUrl = canonicalFrom(Astro.url.pathname, site)
+const body = demoteHeadings(content, 1)
 
-// Datos estructurados para Google: reconoce cada post como artículo CON autor (marca personal).
-const pageUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString()
+const ogImage = pickOgImage(images, entry.id)
+const imageUrls = [
+  toAbsolute(ogImage.src, site),
+  ...(images ?? []).map((image) => toAbsolute(image.src, site)).filter((url) => url !== toAbsolute(ogImage.src, site)),
+]
+
 const jsonLd = {
-  '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: title,
+  '@id': `${pageUrl}#article`,
+  headline: clamp(title, 110),
+  description,
+  url: pageUrl,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
   datePublished: isoDate,
+  dateModified: isoDate,
   inLanguage: 'es',
-  mainEntityOfPage: pageUrl,
-  ...(description ? { description } : {}),
-  ...(images?.length ? { image: images.map((image: any) => new URL(image.src, Astro.site ?? Astro.url.origin).toString()) } : {}),
-  author: {
-    '@type': 'Person',
-    name: 'Jesús Oyola',
-    alternateName: 'J Oyola',
-    sameAs: ['https://www.instagram.com/jesus.oyola.15', 'https://www.youtube.com/@jesus.oyola.15'],
-  },
+  image: imageUrls,
+  author: personNode(site),
 }
 ---
 
-<MainLayout title={`${title} — J Oyola`} description={description} jsonLd={jsonLd}>
+<MainLayout
+  title={seoTitle}
+  description={description}
+  jsonLd={jsonLd}
+  type="article"
+  publishedTime={isoDate}
+  image={{
+    src: ogImage.src,
+    width: ogImage.width,
+    height: ogImage.height,
+    alt: ogImage.generated ? title : `Imagen del post «${title}»`,
+  }}
+  noindex={isTestEntry(entry.id)}
+  breadcrumbs={[
+    { name: 'Inicio', path: '/' },
+    { name: 'Posts', path: '/posts/' },
+    { name: title, path: Astro.url.pathname },
+  ]}
+>
   <article class="w-full px-2 pt-6 pb-4 flex flex-col gap-3">
     <a href="/" class="text-xs text-neutral-400 hover:text-neutral-200">← Volver al blog</a>
 
@@ -56,8 +133,17 @@ const jsonLd = {
 
     {images?.length ? (
       <div class="flex flex-col gap-2">
-        {images.map((image: any) => (
-          <img src={image.src} alt={title} loading="lazy" decoding="async" width="100%" class="rounded-md" />
+        {images.map((image, index) => (
+          <img
+            src={image.src}
+            alt={images.length > 1 ? `Imagen ${index + 1} de ${images.length} del post «${title}»` : `Imagen del post «${title}»`}
+            width={image.width}
+            height={image.height}
+            loading={index === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            class="h-auto w-full rounded-md"
+            {...(index === 0 ? { fetchpriority: 'high' } : {})}
+          />
         ))}
       </div>
     ) : null}
@@ -68,13 +154,29 @@ const jsonLd = {
         src={spotifyUrl}
         width="100%"
         height="80"
-        title="Spotify Player"
+        title={`Reproductor de Spotify — ${title}`}
         allowfullscreen
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
       />
     ) : null}
 
-    <div class="text-sm leading-6 text-neutral-200 [&_a]:text-blue-300 [&_a]:underline" set:html={content} />
+    <div class="text-sm leading-6 text-neutral-200 [&_a]:text-blue-300 [&_a]:underline" set:html={body} />
+
+    {SHOW_ADJACENT_POSTS && (newer || older) ? (
+      <nav aria-label="Más posts" class="mt-4 flex flex-col gap-2 border-t border-neutral-400/10 pt-3 text-xs text-neutral-400">
+        {newer ? (
+          <a href={`/posts/${newer.id}/`} class="hover:text-neutral-200">
+            Más reciente: <span class="text-neutral-200">{newer.title}</span>
+          </a>
+        ) : null}
+        {older ? (
+          <a href={`/posts/${older.id}/`} class="hover:text-neutral-200">
+            Anterior: <span class="text-neutral-200">{older.title}</span>
+          </a>
+        ) : null}
+        <a href="/posts/" class="hover:text-neutral-200">Ver todos los posts</a>
+      </nav>
+    ) : null}
   </article>
 </MainLayout>

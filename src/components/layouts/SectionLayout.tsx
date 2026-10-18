@@ -4,9 +4,12 @@ import clsx from "clsx"
 interface SectionLayoutProps extends BaseComponentProps {
     title: string
     rightNode?: React.ReactNode
+    /** 'h1' si la sección es el título principal de la página (por defecto); 'h2' si la página ya tiene otro h1. */
+    headingLevel?: 'h1' | 'h2'
 }
 
-export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, className, rightNode, ...props }) => {
+export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, className, rightNode, headingLevel = 'h1', ...props }) => {
+    const Heading = headingLevel
     return (
         <div
             className={
@@ -21,7 +24,7 @@ export const SectionLayout: React.FC<SectionLayoutProps> = ({ title, children, c
             <header
                 className="flex items-center justify-between relative z-50"
             >
-                <h1 className='font-bold text-xl underline decoration-wavy decoration-zinc-50'>{title}</h1>
+                <Heading className='font-bold text-xl underline decoration-wavy decoration-zinc-50'>{title}</Heading>
                 {rightNode}
             </header>
             <div className="w-full flex-1 flex flex-col gap-3 relative z-0">

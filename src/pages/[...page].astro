@@ -1,48 +1,52 @@
 ---
 import IndexPostsSection from "@/components/feature/IndexPostsSection.astro"
 import JOyolaBabyTheLegend from "@/components/feature/JOyolaBabyTheLegend.astro"
-import MainLayout from "@/layouts/MainLayout.astro"
 import Pagination from "@/components/ui/Pagination.astro"
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, INDEX_PAGINATED_PAGES, PAGE_SIZE, SITE_NAME } from "@/consts"
+import MainLayout from "@/layouts/MainLayout.astro"
 import "@/styles/global.styles.css"
-import { getPostsEntries } from "@/utils"
-import type { GetStaticPaths } from "astro"
 import type { IPost } from "@/models"
+import { getPostsEntries } from "@/utils"
+import { personNode, websiteNode } from "@/utils/seo.util"
+import type { GetStaticPaths } from "astro"
 
 export const getStaticPaths = (async ({ paginate }) => {
     const allPosts = await getPostsEntries('posts')
     const sortedPosts = allPosts.sort((a, b) => b.publishDate - a.publishDate)
-    
+
 	const pinnedPost = allPosts.find((post) => post.id === "6e12f930-fd57-4f7d-a653-abfe3a60c0ff")
 
-    return paginate(sortedPosts, { pageSize: 8, props: { pinnedPost } })
+    return paginate(sortedPosts, { pageSize: PAGE_SIZE, props: { pinnedPost } })
 }) satisfies GetStaticPaths
 
 const { page, pinnedPost } = Astro.props
+const site = Astro.site ?? new URL(Astro.url.origin)
 
-// Person (solo en la portada): refuerza la entidad "Jesús Oyola" para Google.
-const personLd = page.currentPage === 1
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: 'Jesús Oyola',
-        alternateName: ['J Oyola', 'JOyola'],
-        url: new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString(),
-        sameAs: [
-            'https://www.instagram.com/jesus.oyola.15',
-            'https://www.youtube.com/@jesus.oyola.15',
-        ],
-    }
-    : undefined
+const isFirstPage = page.currentPage === 1
+const dateFmt = new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeZone: 'America/Bogota' })
+const newest = page.data[0]
+const oldest = page.data[page.data.length - 1]
+
+const title = isFirstPage ? DEFAULT_TITLE : `${SITE_NAME} — Blog (página ${page.currentPage})`
+const description =
+    isFirstPage || !newest || !oldest
+        ? DEFAULT_DESCRIPTION
+        : `Posts del blog de ${SITE_NAME} publicados entre el ${dateFmt.format(oldest.publishDate)} y el ${dateFmt.format(newest.publishDate)}. Es la página ${page.currentPage} de ${page.lastPage} del archivo cronológico del blog.`
+
+// Entidad (Person) + WebSite solo en la portada: refuerza la marca "Jesús Oyola".
+const jsonLd = isFirstPage ? [websiteNode(site), personNode(site)] : undefined
 ---
 
 <MainLayout
-    title={page.currentPage === 1 ? 'Jesús Oyola — Música, beats y blog personal' : `Jesús Oyola — Blog (página ${page.currentPage})`}
-    jsonLd={personLd}
+    title={title}
+    description={description}
+    jsonLd={jsonLd}
+    noindex={!INDEX_PAGINATED_PAGES && !isFirstPage}
 >
 	<JOyolaBabyTheLegend />
 	<div class="flex flex-col">
-		<IndexPostsSection posts={page.data} pinnedPost={page.currentPage === 1 ? pinnedPost as IPost : undefined} currentPage={page.currentPage} className="flex-shrink-0 flex-grow [flex-basis:100%]" />
-        
+		<IndexPostsSection posts={page.data} pinnedPost={isFirstPage ? pinnedPost as IPost : undefined} currentPage={page.currentPage} className="flex-shrink-0 flex-grow [flex-basis:100%]" />
+
         <Pagination page={page} />
 	</div>
 </MainLayout>

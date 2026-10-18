@@ -2,26 +2,34 @@
 import JesusOyolaSection from "@/components/feature/JesusOyolaSection.astro"
 import MainLayout from "@/layouts/MainLayout.astro"
 import "@/styles/global.styles.css"
+import { canonicalFrom, personId, personNode, websiteId } from "@/utils/seo.util"
 
-// Página-entidad de la marca personal: schema Person para que Google conecte
-// "Jesús Oyola" (músico) con sus perfiles y su web.
-const personLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: 'Jesús Oyola',
-    alternateName: ['J Oyola', 'JOyola'],
-    url: new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString(),
-    sameAs: [
-        'https://www.instagram.com/jesus.oyola.15',
-        'https://www.youtube.com/@jesus.oyola.15',
-    ],
-}
+// Página-entidad de la marca personal: ProfilePage + Person (misma ficha que en toda la web).
+const site = Astro.site ?? new URL(Astro.url.origin)
+const pageUrl = canonicalFrom(Astro.url.pathname, site)
+
+const jsonLd = [
+    {
+        '@type': 'ProfilePage',
+        '@id': `${pageUrl}#profilepage`,
+        url: pageUrl,
+        name: 'Quién es Jesús Oyola',
+        inLanguage: 'es',
+        isPartOf: { '@id': websiteId(site) },
+        mainEntity: { '@id': personId(site) },
+    },
+    personNode(site),
+]
 ---
 
 <MainLayout
-    title="Sobre Jesús Oyola — música, beats y proyectos"
-    description="Página oficial de Jesús Oyola: música, beats, proyectos y blog personal desde Colombia."
-    jsonLd={personLd}
+    title="Quién es Jesús Oyola — músico y beatmaker de Bogotá"
+    description="Página oficial de Jesús Oyola, músico y beatmaker de Bogotá, Colombia: quién es, su música, sus beats, sus proyectos y su blog personal."
+    jsonLd={jsonLd}
+    breadcrumbs={[
+        { name: 'Inicio', path: '/' },
+        { name: 'Sobre Jesús Oyola', path: '/jesus-oyola/' },
+    ]}
 >
     <JesusOyolaSection />
 </MainLayout>

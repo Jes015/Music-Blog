@@ -3,50 +3,112 @@ import '@fontsource/geist-sans/400.css'
 import '@fontsource/geist-sans/500.css'
 import '@fontsource/geist-sans/600.css'
 import '@fontsource/geist-sans/700.css'
-import { ViewTransitions } from 'astro:transitions';
-import { getPostsEntries } from "@/utils"
+import { ViewTransitions } from 'astro:transitions'
+import Galaxy from '@/components/Galaxy'
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, FEED, PERSON, SITE_LOCALE, SITE_NAME, SOCIAL_LINKS, THEME_COLOR } from '@/consts'
+import { breadcrumbNode, canonicalFrom, routeSeoDefaults, toAbsolute, type BreadcrumbItem, type JsonLd } from '@/utils/seo.util'
 
-// Post Locator Map Generation
-const allPosts = await getPostsEntries('posts')
-const sortedPosts = allPosts.sort((a, b) => b.publishDate - a.publishDate)
-const pageSize = 8
-const postPageMap: Record<string, number> = {}
-sortedPosts.forEach((post, index) => {
-    const pageNumber = Math.floor(index / pageSize) + 1
-    postPageMap[post.id] = pageNumber
-})
-const postsMapJSON = JSON.stringify(postPageMap)
-import Galaxy from "@/components/Galaxy"
+interface OgImage {
+    src: string
+    width?: number
+    height?: number
+    alt?: string
+}
 
-const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString()
-const propTitle = Astro.props.title ?? 'Jesús Oyola — Música, beats y blog personal'
-const propDescription = Astro.props.description ?? 'Blog de música de Jesús Oyola. Historias, pensamientos y canciones favoritas.'
-const propJsonLd = Astro.props.jsonLd
+interface Props {
+    title?: string
+    description?: string
+    jsonLd?: JsonLd | JsonLd[]
+    image?: OgImage
+    type?: 'website' | 'article'
+    noindex?: boolean
+    publishedTime?: string
+    breadcrumbs?: BreadcrumbItem[]
+    // Páginas que no he visto podrían pasar otras props: no rompemos astro check por eso.
+    [key: string]: unknown
+}
+
+const { title, description, jsonLd, image, type = 'website', noindex, publishedTime, breadcrumbs } = Astro.props
+
+const site = Astro.site ?? new URL(Astro.url.origin)
+const route = routeSeoDefaults(Astro.url.pathname)
+
+const pageTitle = title ?? route?.title ?? DEFAULT_TITLE
+const pageDescription = description ?? route?.description ?? DEFAULT_DESCRIPTION
+const robotsNoIndex = noindex ?? route?.noindex ?? false
+const crumbs = breadcrumbs ?? route?.breadcrumbs
+
+const canonical = canonicalFrom(Astro.url.pathname, site)
+const og = image ?? { src: '/og/default.png', width: 1200, height: 630, alt: pageTitle }
+const ogImageUrl = toAbsolute(og.src, site)
+const ogAlt = og.alt ?? pageTitle
+
+// JSON-LD: un único @graph por página (sin @context anidado) + BreadcrumbList si aplica.
+const nodes: JsonLd[] = []
+for (const node of Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []) {
+    const { '@context': _ctx, ...rest } = node
+    nodes.push(rest)
+}
+if (crumbs?.length) nodes.push(breadcrumbNode(crumbs, site))
+const jsonLdString = nodes.length
+    ? JSON.stringify({ '@context': 'https://schema.org', '@graph': nodes }).replace(/</g, '\\u003c')
+    : undefined
 ---
 
 <!doctype html>
 <html lang="es">
 	<head>
-		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content={propDescription} />
+		<title>{pageTitle}</title>
+		<meta name="description" content={pageDescription} />
 		<link rel="canonical" href={canonical} />
-		<link rel="shortcut icon" href="https://files.kick.com/emotes/2251020/fullsize" type="image/x-icon">
-		<title>{propTitle}</title>
-		<meta property="og:site_name" content="J Oyola" />
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content={propTitle} />
-		<meta property="og:description" content={propDescription} />
+		{robotsNoIndex
+			? <meta name="robots" content="noindex,follow" />
+			: <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />}
+		<meta name="author" content={PERSON.name} />
+		<meta name="theme-color" content={THEME_COLOR} />
+		<meta name="color-scheme" content="dark" />
+
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/icons/48.png" sizes="48x48" type="image/png" />
+		<link rel="icon" href="/favicon.ico" sizes="48x48" />
+		<link rel="apple-touch-icon" href="/icons/180.png" />
+		<link rel="alternate" type="application/rss+xml" title={FEED.title} href={toAbsolute('/rss.xml', site)} />
+		<link rel="me" href={SOCIAL_LINKS.instagram} />
+		<link rel="me" href={SOCIAL_LINKS.youtube} />
+
+		<meta property="og:site_name" content={SITE_NAME} />
+		<meta property="og:locale" content={SITE_LOCALE} />
+		<meta property="og:type" content={type} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={pageDescription} />
 		<meta property="og:url" content={canonical} />
-		<meta name="twitter:card" content="summary" />
-		{propJsonLd && <script type="application/ld+json" set:html={JSON.stringify(propJsonLd).replace(/</g, '\\u003c')} />}
-        <ViewTransitions />
+		<meta property="og:image" content={ogImageUrl} />
+		{og.width && <meta property="og:image:width" content={String(og.width)} />}
+		{og.height && <meta property="og:image:height" content={String(og.height)} />}
+		<meta property="og:image:alt" content={ogAlt} />
+		{type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+		{type === 'article' && <meta property="article:author" content={toAbsolute('/', site)} />}
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={pageDescription} />
+		<meta name="twitter:image" content={ogImageUrl} />
+		<meta name="twitter:image:alt" content={ogAlt} />
+
+		{jsonLdString && <script type="application/ld+json" set:html={jsonLdString} />}
+		<ViewTransitions />
 	</head>
 	<body class="bg-neutral-900 text-white overflow-x-hidden">
-		<main class="flex flex-col items-center overflow-x-hidden w-full">
-			
-            <div class="fixed top-0 left-0 w-full h-full -z-10 bg-neutral-900">
-                <Galaxy 
+		<a
+			href="#contenido"
+			class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:text-black"
+		>Saltar al contenido</a>
+
+		<div class="flex flex-col items-center overflow-x-hidden w-full">
+            <div aria-hidden="true" class="fixed top-0 left-0 w-full h-full -z-10 bg-neutral-900">
+                <Galaxy
                     client:only="react"
                     mouseInteraction={true}
                     mouseRepulsion={true}
@@ -62,83 +124,63 @@ const propJsonLd = Astro.props.jsonLd
                     speed={0.5}
                 />
             </div>
-            {/* <img src="/stars-wallpaper-squosh.webp" alt="faith background" class="z-0 fixed top-0 left-0 w-full select-none opacity-5 h-full object-cover aspect-auto blur-sm"> */}
-			
-            <div class="z-50 [width:96vw] sm:[width:60vw] md:[width:55vw] lg:[width:40vw] xl:[width:35vw] 2xl:[width:30vw]">
-				<slot />
+
+			<div class="z-50 [width:96vw] sm:[width:60vw] md:[width:55vw] lg:[width:40vw] xl:[width:35vw] 2xl:[width:30vw]">
+				<main id="contenido" tabindex="-1" class="focus:outline-none">
+					<slot />
+				</main>
                 <footer class="w-full text-xs text-neutral-400 mt-10 mb-8 flex flex-col items-center gap-1.5 text-center px-2">
-                    <a href="/posts" class="underline hover:text-neutral-200">Todos los posts</a>
+                    <a href="/posts/" class="underline hover:text-neutral-200">Todos los posts</a>
                     <span class="flex items-center gap-2">
-                        <a href="https://www.instagram.com/jesus.oyola.15" class="underline hover:text-neutral-200">Instagram</a>
+                        <a href={SOCIAL_LINKS.instagram} rel="me" class="underline hover:text-neutral-200">Instagram</a>
                         <span aria-hidden="true">·</span>
-                        <a href="https://www.youtube.com/@jesus.oyola.15" class="underline hover:text-neutral-200">YouTube</a>
+                        <a href={SOCIAL_LINKS.youtube} rel="me" class="underline hover:text-neutral-200">YouTube</a>
                     </span>
                     <a href="https://papi.click/alertas/anime?ref=blog" class="underline hover:text-neutral-200">
                         Papi Notifications — avisos de anime, series y fútbol a tu WhatsApp o Telegram
                     </a>
                 </footer>
 			</div>
-		</main>
+		</div>
+
 	<script>
-		document.addEventListener('astro:page-load', () => {
-			const path = window.location.pathname;
-            const hash = window.location.hash;
-			// Check if we are on a likely paginated page (ends in a number or is the customized highlights route)
-			// But EXCLUDE the strict root "/"
-			const isPaginated = (path !== '/' && /\/\d+$/.test(path)) || path.includes('/destacados');
-			const postsTop = document.getElementById('posts-top');
+		// Script empaquetado (se ejecuta una sola vez, también con ViewTransitions).
+		document.addEventListener('astro:page-load', async () => {
+			const { pathname, hash: rawHash } = window.location
+			let hash = rawHash.slice(1)
+			try { hash = decodeURIComponent(hash) } catch { /* hash malformado */ }
 
-            // Only scroll to top of posts if we are paginating AND there is NO specific hash target (deep link)
+			// 1) Páginas paginadas o /destacados: baja al inicio de la lista (si no hay enlace profundo).
+			const isPaginated = (pathname !== '/' && /\/\d+\/?$/.test(pathname)) || pathname.includes('/destacados')
+			const postsTop = document.getElementById('posts-top')
 			if (isPaginated && postsTop && !hash) {
-				postsTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				postsTop.scrollIntoView({ behavior: 'smooth', block: 'start' })
 			}
-		});
+
+			// 2) Enlace profundo a un post: si no está en esta página, lo buscamos en el mapa (se pide solo cuando hace falta).
+			if (!hash) return
+			const element = document.getElementById(hash)
+			if (element) {
+				element.scrollIntoView({ behavior: 'smooth' })
+				return
+			}
+			if (!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(hash)) return
+
+			try {
+				const response = await fetch('/api/post-map.json')
+				if (!response.ok) return
+				const map: Record<string, number> = await response.json()
+				const targetPage = map[hash]
+				if (!targetPage) return
+				const target = targetPage === 1 ? '/' : `/${targetPage}/`
+				const here = pathname.replace(/\/+$/, '') || '/'
+				if (here === (target.replace(/\/+$/, '') || '/')) return
+				window.location.href = `${target}#${hash}`
+			} catch {
+				/* sin red: no pasa nada */
+			}
+		})
 	</script>
-
-    <script is:inline define:vars={{ postsMapJSON }}>
-        document.addEventListener('astro:page-load', () => {
-            const hash = window.location.hash.substring(1); // Remove '#'
-            if (!hash) return;
-
-            console.log('[PostLocator] Checking for post:', hash);
-
-            // Verify if the element is already on the page
-            const element = document.getElementById(hash);
-            if (element) {
-                console.log('[PostLocator] Element found on current page. Scrolling...');
-                element.scrollIntoView({ behavior: 'smooth' });
-                return;
-            }
-
-            console.log('[PostLocator] Element NOT found. Checking map...');
-
-            try {
-                const map = JSON.parse(postsMapJSON);
-                const targetPage = map[hash];
-
-                console.log('[PostLocator] Target Page from map:', targetPage);
-
-                if (targetPage) {
-                    const targetPath = targetPage === 1 ? '/' : `/${targetPage}`;
-                    
-                    console.log(`[PostLocator] Redirecting from ${window.location.pathname} to ${targetPath}#${hash}`);
-
-                    // Avoid infinite redirect if we are already on that page but element is missing
-                    if (window.location.pathname === targetPath || (targetPage === 1 && window.location.pathname === '/')) {
-                        console.warn('[PostLocator] ALREADY ON TARGET PAGE but element not found. Rendering issue?');
-                        return;
-                    }
-
-                    // Redirect
-                    window.location.href = `${targetPath}#${hash}`;
-                } else {
-                    console.warn('[PostLocator] Post ID not found in map.');
-                }
-            } catch (e) {
-                console.error('[PostLocator] Error parsing map', e);
-            }
-        });
-    </script>
 	</body>
 </html>
 

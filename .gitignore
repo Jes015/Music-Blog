@@ -19,3 +19,7 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# SEO audit prompt/response (temporales, no commitear)
+PROMPT-CLAUDE-SEO.md
+CLAUDE-SEO-RESPONSE.md

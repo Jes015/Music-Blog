@@ -12,38 +12,40 @@ interface Props {
 
 const { className, posts, pinnedPost, currentPage = 1 } = Astro.props;
 
-if (pinnedPost) {
-    pinnedPost.id = "pinned-pinned-pinned-pinned-pinned";
-}
+// Se CLONA (antes se mutaba el objeto original, que es el mismo de la lista paginada:
+// el post fijado perdía su id real en su propia página y el enlace compartido dejaba de anclar).
+const pinned: IPost | undefined = pinnedPost
+    ? { ...pinnedPost, id: "pinned-pinned-pinned-pinned-pinned" }
+    : undefined;
 ---
 
-<SectionLayout className={className} title={currentPage > 1 ? `Posts (Página ${currentPage})` : "Posts"}>
+<SectionLayout className={className} title={currentPage > 1 ? `Posts (Página ${currentPage})` : "Posts"} headingLevel="h2">
     <div slot="rightNode" class="flex gap-2 items-center">
         <PostSearch client:idle />
         <PostFilter client:idle />
     </div>
-    {pinnedPost && <Post data={pinnedPost} isPinned priority initialUnlock={false} client:load />}
+    {pinned && <Post data={pinned} isPinned priority initialUnlock={false} client:idle />}
     {
         posts.map((post, index) => {
-            const isFirst = index === 0; 
-            
+            const isFirst = index === 0;
+
             if (isFirst) {
                  return (
-                    <Post 
-                        data={post} 
-                        priority={true} 
+                    <Post
+                        data={post}
+                        priority={true}
                         initialUnlock={false}
-                        client:load 
+                        client:idle
                     />
                 )
             }
 
             return (
-                <Post 
-                    data={post} 
-                    priority={false} 
+                <Post
+                    data={post}
+                    priority={false}
                     initialUnlock={false}
-                    client:visible={{ rootMargin: "200px" }} 
+                    client:visible={{ rootMargin: "200px" }}
                 />
             )
         })
