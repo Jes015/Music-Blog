@@ -130,7 +130,11 @@ const jsonLdString = nodes.length
 					<slot />
 				</main>
                 <footer class="w-full text-xs text-neutral-400 mt-10 mb-8 flex flex-col items-center gap-1.5 text-center px-2">
-                    <a href="/posts/" class="underline hover:text-neutral-200">Todos los posts</a>
+                    <span class="flex items-center gap-2">
+                        <a href="/jesus-oyola/" class="underline hover:text-neutral-200">Sobre Jesús Oyola</a>
+                        <span aria-hidden="true">·</span>
+                        <a href="/posts/" class="underline hover:text-neutral-200">Todos los posts</a>
+                    </span>
                     <span class="flex items-center gap-2">
                         <a href={SOCIAL_LINKS.instagram} rel="me" class="underline hover:text-neutral-200">Instagram</a>
                         <span aria-hidden="true">·</span>

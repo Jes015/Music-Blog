@@ -18,9 +18,9 @@ const { className } = Astro.props;
         {
             goals.toSorted((a, b) => b.data.yearNumeric - a.data.yearNumeric).map(({ data: goalCollection }) => (
                 <li class="mb-4">
-                    <span class="font-bold underline mb-2 inline-block text-base text-zinc-100">
+                    <h2 class="font-bold underline mb-2 inline-block text-base text-zinc-100">
                         {goalCollection.year}
-                    </span>
+                    </h2>
                     <ul class="list-decimal text-base">
                         {
                             goalCollection?.goals?.[0] == null && <li class="text-xs text-zinc-300">Ya casiii pongo estas, espera otro año mas.</li>

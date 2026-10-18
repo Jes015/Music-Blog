@@ -14,7 +14,7 @@ data = data.filter(post => post.valor)
 const { className } = Astro.props;
 ---
 
-<SectionLayout className={[className, "pb-72"].join(" ")} title="Posts que piensan como yo">
+<SectionLayout className={[className, "pb-72"].join(" ")} title="Posts que piensan como yo" headingLevel="h2">
     {
         data
             .sort((a, b) => b.publishDate - a.publishDate)

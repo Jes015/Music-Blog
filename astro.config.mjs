@@ -31,6 +31,8 @@ const newest = new Date(Math.max(0, ...[...postDates.values()].map((d) => d.getT
 const PAGINATED_HOME = /^\/\d+\/?$/
 const PAGINATED_FEATURED = /^\/destacados\/\d+\/?$/
 const TEST_ENTRY = /-test(\/|$)/i
+// Página vacía mientras no haya canciones favoritas (sync con routeSeoDefaults en seo.util.ts).
+const EMPTY_FAVORITES = /^\/canciones-favoritas(\/\d+)?\/?$/
 
 // https://astro.build/config
 export default defineConfig({
@@ -41,7 +43,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const { pathname } = new URL(page)
-        return !PAGINATED_HOME.test(pathname) && !PAGINATED_FEATURED.test(pathname) && !TEST_ENTRY.test(pathname)
+        return !PAGINATED_HOME.test(pathname) && !PAGINATED_FEATURED.test(pathname) && !TEST_ENTRY.test(pathname) && !EMPTY_FAVORITES.test(pathname)
       },
       serialize(item) {
         const { pathname } = new URL(item.url)

@@ -162,6 +162,9 @@ export function routeSeoDefaults(pathname: string): RouteSeo | undefined {
     return {
       title: `Canciones favoritas — ${SITE_NAME}`,
       description: `Las canciones favoritas de ${SITE_NAME}, con reproductor de Spotify y las notas que escribió sobre cada una en su blog de música.`,
+      // Página vacía ("no hay canciones aún"): noindex hasta que tenga contenido.
+      // Al agregar canciones: quitar este noindex y el filtro EMPTY_FAVORITES de astro.config.mjs.
+      noindex: true,
       breadcrumbs: [HOME_CRUMB, { name: 'Canciones favoritas', path: '/canciones-favoritas/' }],
     }
   }
