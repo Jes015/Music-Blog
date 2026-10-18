@@ -18,9 +18,27 @@ export const getStaticPaths = (async ({ paginate }) => {
 }) satisfies GetStaticPaths
 
 const { page, pinnedPost } = Astro.props
+
+// Person (solo en la portada): refuerza la entidad "Jesús Oyola" para Google.
+const personLd = page.currentPage === 1
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Jesús Oyola',
+        alternateName: ['J Oyola', 'JOyola'],
+        url: new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString(),
+        sameAs: [
+            'https://www.instagram.com/jesus.oyola.15',
+            'https://www.youtube.com/@jesus.oyola.15',
+        ],
+    }
+    : undefined
 ---
 
-<MainLayout title={`Page ${page.currentPage} | Music Blog`}>
+<MainLayout
+    title={page.currentPage === 1 ? 'Jesús Oyola — Música, beats y blog personal' : `Jesús Oyola — Blog (página ${page.currentPage})`}
+    jsonLd={personLd}
+>
 	<JOyolaBabyTheLegend />
 	<div class="flex flex-col">
 		<IndexPostsSection posts={page.data} pinnedPost={page.currentPage === 1 ? pinnedPost as IPost : undefined} currentPage={page.currentPage} className="flex-shrink-0 flex-grow [flex-basis:100%]" />

@@ -4,7 +4,6 @@ interface Props {
 }
 
 import { SectionLayout } from "@/components/layouts"
-import MainLayout from "@/layouts/MainLayout.astro"
 import { getPostsEntries } from "@/utils"
 import { Post } from "./Post/Post"
 
@@ -15,12 +14,10 @@ data = data.filter(post => post.valor)
 const { className } = Astro.props;
 ---
 
-<MainLayout>
-    <SectionLayout className={[className, "pb-72"].join(" ")} title="Posts que piensan como yo">
-        {
-            data
-                .sort((a, b) => b.publishDate - a.publishDate)
-                .map((post) => <Post data={post} client:load />)
-        }
-    </SectionLayout>
-</MainLayout>
+<SectionLayout className={[className, "pb-72"].join(" ")} title="Posts que piensan como yo">
+    {
+        data
+            .sort((a, b) => b.publishDate - a.publishDate)
+            .map((post) => <Post data={post} client:load />)
+    }
+</SectionLayout>

@@ -2,8 +2,26 @@
 import JesusOyolaSection from "@/components/feature/JesusOyolaSection.astro"
 import MainLayout from "@/layouts/MainLayout.astro"
 import "@/styles/global.styles.css"
+
+// Página-entidad de la marca personal: schema Person para que Google conecte
+// "Jesús Oyola" (músico) con sus perfiles y su web.
+const personLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Jesús Oyola',
+    alternateName: ['J Oyola', 'JOyola'],
+    url: new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString(),
+    sameAs: [
+        'https://www.instagram.com/jesus.oyola.15',
+        'https://www.youtube.com/@jesus.oyola.15',
+    ],
+}
 ---
 
-<MainLayout>
+<MainLayout
+    title="Sobre Jesús Oyola — música, beats y proyectos"
+    description="Página oficial de Jesús Oyola: música, beats, proyectos y blog personal desde Colombia."
+    jsonLd={personLd}
+>
     <JesusOyolaSection />
 </MainLayout>
