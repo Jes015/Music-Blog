@@ -19,6 +19,9 @@ const postsMapJSON = JSON.stringify(postPageMap)
 import Galaxy from "@/components/Galaxy"
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString()
+const propTitle = Astro.props.title ?? 'J Oyola - A legend live history'
+const propDescription = Astro.props.description ?? 'Blog de música de Jesús Oyola. Historias, pensamientos y canciones favoritas.'
+const propJsonLd = Astro.props.jsonLd
 ---
 
 <!doctype html>
@@ -26,10 +29,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content={Astro.props.description || "Blog de música de Jesús Oyola. Historias, pensamientos y canciones favoritas."} />
+		<meta name="description" content={propDescription} />
 		<link rel="canonical" href={canonical} />
 		<link rel="shortcut icon" href="https://files.kick.com/emotes/2251020/fullsize" type="image/x-icon">
-		<title>{Astro.props.title || "J Oyola - A legend live history"}</title>
+		<title>{propTitle}</title>
+		<meta property="og:site_name" content="J Oyola" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={propTitle} />
+		<meta property="og:description" content={propDescription} />
+		<meta property="og:url" content={canonical} />
+		<meta name="twitter:card" content="summary" />
+		{propJsonLd && <script type="application/ld+json" set:html={JSON.stringify(propJsonLd).replace(/</g, '\\u003c')} />}
         <ViewTransitions />
 	</head>
 	<body class="bg-neutral-900 text-white overflow-x-hidden">
@@ -58,8 +68,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
 				<slot />
                 <footer class="w-full text-xs text-neutral-400 mt-10 mb-8 flex flex-col items-center gap-1.5 text-center px-2">
                     <a href="/posts" class="underline hover:text-neutral-200">Todos los posts</a>
+                    <span class="flex items-center gap-2">
+                        <a href="https://www.instagram.com/jesus.oyola.15" class="underline hover:text-neutral-200">Instagram</a>
+                        <span aria-hidden="true">·</span>
+                        <a href="https://www.youtube.com/@jesus.oyola.15" class="underline hover:text-neutral-200">YouTube</a>
+                    </span>
                     <a href="https://papi.click/alertas/anime?ref=blog" class="underline hover:text-neutral-200">
-                        Papi Notifications — avisos de anime, series y fútbol a WhatsApp y Telegram
+                        Papi Notifications — avisos de anime, series y fútbol a tu WhatsApp o Telegram
                     </a>
                 </footer>
 			</div>
