@@ -7,6 +7,6 @@ import tailwind from "@astrojs/tailwind"
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://j-oyola-blog.vercel.app',
   integrations: [mdx(), sitemap(), react(), tailwind()]
 });

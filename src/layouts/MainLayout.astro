@@ -17,6 +17,8 @@ sortedPosts.forEach((post, index) => {
 })
 const postsMapJSON = JSON.stringify(postPageMap)
 import Galaxy from "@/components/Galaxy"
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString()
 ---
 
 <!doctype html>
@@ -24,7 +26,8 @@ import Galaxy from "@/components/Galaxy"
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content={Astro.props.description || "Blog de música de Jesús Oyola. Historias, pensamientos y canciones favoritas."} />
+		<meta name="description" content={Astro.props.description || "Blog de música de Jesús Oyola. Historias, pensamientos y canciones favoritas."} />
+		<link rel="canonical" href={canonical} />
 		<link rel="shortcut icon" href="https://files.kick.com/emotes/2251020/fullsize" type="image/x-icon">
 		<title>{Astro.props.title || "J Oyola - A legend live history"}</title>
         <ViewTransitions />
@@ -53,6 +56,12 @@ import Galaxy from "@/components/Galaxy"
 			
             <div class="z-50 [width:96vw] sm:[width:60vw] md:[width:55vw] lg:[width:40vw] xl:[width:35vw] 2xl:[width:30vw]">
 				<slot />
+                <footer class="w-full text-xs text-neutral-400 mt-10 mb-8 flex flex-col items-center gap-1.5 text-center px-2">
+                    <a href="/posts" class="underline hover:text-neutral-200">Todos los posts</a>
+                    <a href="https://papi.click/alertas/anime?ref=blog" class="underline hover:text-neutral-200">
+                        Papi Notifications — avisos de anime, series y fútbol a WhatsApp y Telegram
+                    </a>
+                </footer>
 			</div>
 		</main>
 	<script>

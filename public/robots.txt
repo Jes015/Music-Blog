@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://j-oyola-blog.vercel.app/sitemap-index.xml
