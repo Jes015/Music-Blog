@@ -9,5 +9,13 @@
       "source": "/og/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "j-oyola-blog.vercel.app" }],
+      "destination": "https://jesusoyola.com/$1",
+      "permanent": true
+    }
   ]
 }
