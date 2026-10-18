@@ -35,7 +35,7 @@ const TEST_ENTRY = /-test(\/|$)/i
 // https://astro.build/config
 export default defineConfig({
   // ⬇️ ÚNICA línea a cambiar al migrar a https://jesusoyola.com
-  site: 'https://j-oyola-blog.vercel.app',
+  site: 'https://jesusoyola.com',
   integrations: [
     mdx(),
     sitemap({
