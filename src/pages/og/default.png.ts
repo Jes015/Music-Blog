@@ -5,7 +5,7 @@ export const GET: APIRoute = async ({ site }) => {
   const png = await renderOgCard({
     kicker: 'Música, beats y blog personal',
     title: 'Jesús Oyola',
-    footerLeft: 'Bogotá, Colombia',
+    footerLeft: 'Montería, Colombia',
     footerRight: site?.host ?? '',
   })
   return new Response(png, { headers: { 'Content-Type': 'image/png' } })

@@ -5,7 +5,7 @@ export const THEME_COLOR = '#171717'
 
 export const DEFAULT_TITLE = 'Jesús Oyola — Música, beats y blog personal'
 export const DEFAULT_DESCRIPTION =
-  'Sitio oficial de Jesús Oyola, músico y beatmaker de Bogotá: blog personal con historias, pensamientos, canciones favoritas y proyectos.'
+  'Sitio oficial de Jesús Oyola, músico y beatmaker de Montería: blog personal con historias, pensamientos, canciones favoritas y proyectos.'
 
 // false = páginas /2…/N y /destacados/N≥2 con noindex,follow (recuerda sincronizar el filter del sitemap).
 export const INDEX_PAGINATED_PAGES = false
@@ -25,8 +25,8 @@ export const PERSON = {
   name: 'Jesús Oyola',
   alternateName: ['J Oyola', 'JOyola', 'Jesus Oyola'],
   jobTitle: 'Músico y beatmaker',
-  description: 'Músico y beatmaker de Bogotá, Colombia.',
-  city: 'Bogotá',
+  description: 'Músico y beatmaker de Montería, Colombia.',
+  city: 'Montería',
   country: 'CO',
   sameAs: [
     SOCIAL_LINKS.instagram,
