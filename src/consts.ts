@@ -16,6 +16,7 @@ export const SOCIAL_LINKS = {
   instagram: 'https://www.instagram.com/jesus.oyola.15',
   youtube: 'https://www.youtube.com/@jesus.oyola.15',
   linkedin: 'https://www.linkedin.com/in/jesus-oyola/',
+  musicbrainz: 'https://musicbrainz.org/artist/a4845d44-e739-4406-b832-0adfd4c65d2f',
 } as const
 
 // Entidad única: se usa tal cual en TODAS las fichas JSON-LD.
@@ -26,7 +27,7 @@ export const PERSON = {
   description: 'Músico y beatmaker de Bogotá, Colombia.',
   city: 'Bogotá',
   country: 'CO',
-  sameAs: [SOCIAL_LINKS.instagram, SOCIAL_LINKS.youtube, SOCIAL_LINKS.linkedin],
+  sameAs: [SOCIAL_LINKS.instagram, SOCIAL_LINKS.youtube, SOCIAL_LINKS.linkedin, SOCIAL_LINKS.musicbrainz],
 } as const
 
 export const FEED = {
