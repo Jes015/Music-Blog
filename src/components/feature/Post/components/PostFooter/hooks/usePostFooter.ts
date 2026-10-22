@@ -78,7 +78,11 @@ export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
 
         const result = await sendLike(postId)
 
-        if (!result.success) {
+        if (result.alreadyLiked) {
+            // Ya estaba registrado en el servidor: se queda en rojo
+            setIsLiked(true)
+            setLikesCount(prev => Math.max(initialLikes + 1, prev - 1))
+        } else if (!result.success) {
             // Revertir optimismo si falló en el servidor
             setIsLiked(false)
             setLikesCount(prev => Math.max(initialLikes, prev - 1))

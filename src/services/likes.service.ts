@@ -105,7 +105,7 @@ export async function getLikesMap(): Promise<Record<string, number>> {
  */
 export async function sendLike(
   postId: string
-): Promise<{ success: boolean; likes?: number; error?: string }> {
+): Promise<{ success: boolean; likes?: number; error?: string; alreadyLiked?: boolean }> {
   try {
     const res = await fetch('/api/likes', {
       method: 'POST',
@@ -126,6 +126,12 @@ export async function sendLike(
       }
 
       return { success: true, likes: data.likes };
+    }
+
+    // El servidor ya tiene registrado el like de esta IP: lo recordamos en este navegador
+    if (data.alreadyLiked) {
+      markPostAsLikedLocal(postId);
+      return { success: false, alreadyLiked: true, error: data.error };
     }
 
     return {

@@ -1,8 +1,9 @@
-// Interfaces para Cloudflare Workers & D1
+// Interfaces mínimas de Cloudflare Workers & D1
 export interface D1Result<T = unknown> {
   results?: T[];
   success: boolean;
   error?: string;
+  meta?: { changes?: number };
 }
 
 export interface D1PreparedStatement {
@@ -31,227 +32,289 @@ export interface Env {
   IP_SALT?: string;
 }
 
-// Lista de países permitidos: LATAM + España + Estados Unidos
+interface EdgeCache {
+  match(req: Request): Promise<Response | undefined>;
+  put(req: Request, res: Response): Promise<void>;
+}
+
+interface CfProperties {
+  country?: string;
+  asn?: number;
+}
+
+// ==========================================
+// Configuración
+// ==========================================
+
+// Países permitidos: LATAM + España + Estados Unidos
 const ALLOWED_COUNTRIES = new Set([
-  // América Latina
   'AR', 'BO', 'BR', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'GT',
   'HN', 'MX', 'NI', 'PA', 'PE', 'PR', 'PY', 'SV', 'UY', 'VE',
-  // España y Estados Unidos
-  'ES', 'US'
+  'ES', 'US',
 ]);
 
-// Mensajes exactos solicitados
+// Redes de data centers / nubes (de ahí salen casi todos los bots, no lectores reales)
+const BLOCKED_ASNS = new Set([
+  16509, 14618, 8987,          // Amazon AWS
+  15169, 396982, 19527,        // Google Cloud
+  8075, 8068,                  // Microsoft Azure
+  14061,                       // DigitalOcean
+  24940, 213230,               // Hetzner
+  16276,                       // OVH
+  63949,                       // Linode / Akamai
+  20473,                       // Vultr
+  31898,                       // Oracle Cloud
+  45102,                       // Alibaba Cloud
+  132203,                      // Tencent Cloud
+  9009,                        // M247 (VPNs)
+  60068,                       // CDN77 / Datacamp (VPNs)
+  212238,                      // Datacamp
+]);
+
 const MSG_GEO_BLOCK = "Lo siento pero para evitar ataques masivos bloqueamos la mayoria de paises que no son hispanohablantes";
 const MSG_DAILY_LIMIT = "Tus likes son muy valiosos, solo 1 al dia ;)";
 const MSG_ALREADY_LIKED = "Ya le diste like a este post";
 const MSG_HIGH_VOLUME = "Estamos recibiendo una alta cantidad de likes en este momento. Por favor intenta en unos minutos ;)";
+const MSG_BLOCKED_NETWORK = "Para evitar bots no se permiten likes desde VPNs o servidores ;)";
 
-// Protección contra ráfagas (Circuit Breaker en memoria del Edge)
-const BURST_WINDOW_MS = 10000; // Ventana de 10 segundos
-const MAX_BURST_PER_WINDOW = 15; // Máximo 15 votos en 10 segundos por nodo edge
-let writeTimestamps: number[] = [];
+// Cortacircuitos
+const GLOBAL_MAX_PER_MINUTE = 30;   // Máx likes por minuto en TODO el blog
+const GLOBAL_MAX_PER_DAY = 500;     // Máx likes por día en TODO el blog (somos pequeños, sobra)
+const BURST_WINDOW_MS = 10_000;     // Ventana local de 10 s
+const BURST_MAX = 10;               // Máx intentos por ventana en cada nodo edge
 
-// Hashea la IP con SHA-256 + salt para privacidad
-async function hashIP(ip: string, salt: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(`${ip}:${salt}`);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
+const LIKES_CACHE_SECONDS = 3600;   // 1 hora
+const MAX_BODY_BYTES = 256;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// ==========================================
+// Estado en memoria del isolate (gratis, no toca D1)
+// ==========================================
+let attemptTimestamps: number[] = [];
+let validPostIds: Set<string> | null = null;
+let validPostIdsLoadedAt = 0;
+
+// ==========================================
+// Utilidades
+// ==========================================
 
 function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'X-Content-Type-Options': 'nosniff',
       ...extraHeaders,
     },
   });
 }
 
+// IPv6: un hogar/servidor recibe un bloque /64 entero (trillones de IPs).
+// Si no lo agrupamos, un bot puede rotar IPs infinitas dentro de su bloque.
+function normalizeIP(ip: string): string {
+  if (!ip.includes(':')) return ip;
+  const [head, tail = ''] = ip.split('::');
+  const headParts = head ? head.split(':') : [];
+  const tailParts = tail ? tail.split(':') : [];
+  const missing = Math.max(0, 8 - headParts.length - tailParts.length);
+  const full = [...headParts, ...Array(missing).fill('0'), ...tailParts];
+  return full.slice(0, 4).map((p) => p.toLowerCase() || '0').join(':') + '::/64';
+}
+
+async function hashIP(ip: string, salt: string): Promise<string> {
+  const data = new TextEncoder().encode(`${ip}:${salt}`);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Solo se aceptan likes para posts que existen de verdad.
+// Se lee del JSON estático del build (servir assets es gratis, no cuenta como request).
+async function isRealPost(postId: string, env: Env, origin: string): Promise<boolean> {
+  const now = Date.now();
+  if (!validPostIds || now - validPostIdsLoadedAt > 10 * 60_000) {
+    try {
+      const res = await env.ASSETS.fetch(new Request(`${origin}/api/post-map.json`));
+      if (res.ok) {
+        const map = (await res.json()) as Record<string, number>;
+        validPostIds = new Set(Object.keys(map));
+        validPostIdsLoadedAt = now;
+      }
+    } catch (error) {
+      console.error('[likes] no se pudo cargar post-map.json:', error);
+    }
+  }
+  // Si por algún motivo no se pudo cargar, basta con el formato UUID
+  return validPostIds ? validPostIds.has(postId) : true;
+}
+
+// ==========================================
+// GET /api/likes
+// ==========================================
+async function handleGet(url: URL, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const cache = (caches as unknown as { default?: EdgeCache }).default;
+  // Clave FIJA: ignora cualquier ?query para que nadie pueda saltarse el caché
+  const cacheKey = new Request(`${url.origin}/api/likes`, { method: 'GET' });
+
+  const cached = await cache?.match(cacheKey);
+  if (cached) return cached;
+
+  if (!env.DB) return jsonResponse({ success: true, likes: {} });
+
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT post_id, COUNT(*) AS count FROM post_likes GROUP BY post_id'
+    ).all<{ post_id: string; count: number }>();
+
+    const likes: Record<string, number> = {};
+    for (const row of results ?? []) likes[row.post_id] = row.count;
+
+    const response = jsonResponse({ success: true, likes }, 200, {
+      'Cache-Control': `public, max-age=${LIKES_CACHE_SECONDS}, s-maxage=${LIKES_CACHE_SECONDS}`,
+    });
+    if (cache) ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
+  } catch (error) {
+    console.error('[likes GET]', error);
+    return jsonResponse({ success: false, error: 'Error al consultar likes' }, 500);
+  }
+}
+
+// ==========================================
+// POST /api/likes
+// ==========================================
+async function handlePost(request: Request, url: URL, env: Env): Promise<Response> {
+  const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+  // 1. Solo desde nuestra propia web (evita que otras páginas usen a sus visitantes como bots)
+  const origin = request.headers.get('Origin');
+  if (!isLocalDev && origin !== url.origin) {
+    return jsonResponse({ success: false, error: 'Origen no permitido' }, 403);
+  }
+
+  // 2. Cuerpo pequeño y válido
+  const declaredLength = Number(request.headers.get('Content-Length') ?? '0');
+  if (declaredLength > MAX_BODY_BYTES) {
+    return jsonResponse({ success: false, error: 'Petición demasiado grande' }, 413);
+  }
+  const raw = await request.text();
+  if (raw.length > MAX_BODY_BYTES) {
+    return jsonResponse({ success: false, error: 'Petición demasiado grande' }, 413);
+  }
+  let postId = '';
+  try {
+    const body = JSON.parse(raw) as { postId?: unknown };
+    postId = typeof body.postId === 'string' ? body.postId.trim().toLowerCase() : '';
+  } catch {
+    return jsonResponse({ success: false, error: 'JSON inválido' }, 400);
+  }
+  if (!UUID_RE.test(postId)) {
+    return jsonResponse({ success: false, error: 'ID de post inválido' }, 400);
+  }
+
+  // 3. País (Cloudflare lo da gratis en cada request)
+  const cf = (request as unknown as { cf?: CfProperties }).cf;
+  const country = (cf?.country ?? 'XX').toUpperCase();
+  if (!isLocalDev && !ALLOWED_COUNTRIES.has(country)) {
+    return jsonResponse({ success: false, error: MSG_GEO_BLOCK }, 403);
+  }
+
+  // 4. Data centers / VPNs conocidos
+  if (!isLocalDev && cf?.asn && BLOCKED_ASNS.has(cf.asn)) {
+    return jsonResponse({ success: false, error: MSG_BLOCKED_NETWORK }, 403);
+  }
+
+  // 5. Cortacircuitos local en memoria (frena ráfagas sin tocar la base de datos)
+  const now = Date.now();
+  attemptTimestamps = attemptTimestamps.filter((t) => now - t < BURST_WINDOW_MS);
+  if (attemptTimestamps.length >= BURST_MAX) {
+    return jsonResponse({ success: false, error: MSG_HIGH_VOLUME }, 429);
+  }
+  attemptTimestamps.push(now);
+
+  // 6. El post tiene que existir
+  if (!(await isRealPost(postId, env, url.origin))) {
+    return jsonResponse({ success: false, error: 'Ese post no existe' }, 404);
+  }
+
+  if (!env.DB) {
+    return jsonResponse({ success: false, error: 'Base de datos no configurada' }, 503);
+  }
+
+  // cf-connecting-ip lo pone Cloudflare y no se puede falsificar
+  const clientIP = request.headers.get('cf-connecting-ip') ?? (isLocalDev ? '127.0.0.1' : '');
+  if (!clientIP) {
+    return jsonResponse({ success: false, error: 'No se pudo identificar la conexión' }, 400);
+  }
+  const ipHash = await hashIP(normalizeIP(clientIP), env.IP_SALT || 'jesus-oyola-music-blog-salt-secret');
+
+  const oneMinuteAgo = now - 60_000;
+  const oneDayAgo = now - 86_400_000;
+
+  try {
+    // 7. Una sola consulta para todas las reglas (menos lecturas = menos costo)
+    const status = await env.DB.prepare(
+      `SELECT
+         EXISTS(SELECT 1 FROM post_likes WHERE post_id = ?1 AND ip_hash = ?2) AS already_liked,
+         (SELECT COUNT(*) FROM post_likes WHERE ip_hash = ?2 AND created_at > ?3) AS ip_today,
+         (SELECT COUNT(*) FROM post_likes WHERE created_at > ?4) AS global_minute,
+         (SELECT COUNT(*) FROM post_likes WHERE created_at > ?3) AS global_day`
+    )
+      .bind(postId, ipHash, oneDayAgo, oneMinuteAgo)
+      .first<{ already_liked: number; ip_today: number; global_minute: number; global_day: number }>();
+
+    if (status?.already_liked) {
+      return jsonResponse({ success: false, error: MSG_ALREADY_LIKED, alreadyLiked: true }, 409);
+    }
+    if ((status?.ip_today ?? 0) >= 1) {
+      return jsonResponse({ success: false, error: MSG_DAILY_LIMIT }, 429);
+    }
+    if ((status?.global_minute ?? 0) >= GLOBAL_MAX_PER_MINUTE || (status?.global_day ?? 0) >= GLOBAL_MAX_PER_DAY) {
+      return jsonResponse({ success: false, error: MSG_HIGH_VOLUME }, 429);
+    }
+
+    // 8. Inserción ATÓMICA: vuelve a validar las reglas dentro del mismo INSERT.
+    //    Si llegan 2 peticiones simultáneas de la misma IP, solo una entra.
+    const result = await env.DB.prepare(
+      `INSERT OR IGNORE INTO post_likes (post_id, ip_hash, country, created_at)
+       SELECT ?1, ?2, ?3, ?4
+       WHERE NOT EXISTS (SELECT 1 FROM post_likes WHERE ip_hash = ?2 AND created_at > ?5)
+         AND (SELECT COUNT(*) FROM post_likes WHERE created_at > ?6) < ?7`
+    )
+      .bind(postId, ipHash, country, now, oneDayAgo, oneMinuteAgo, GLOBAL_MAX_PER_MINUTE)
+      .run();
+
+    if (!result.meta?.changes) {
+      return jsonResponse({ success: false, error: MSG_DAILY_LIMIT }, 429);
+    }
+
+    const updated = await env.DB.prepare('SELECT COUNT(*) AS total FROM post_likes WHERE post_id = ?')
+      .bind(postId)
+      .first<{ total: number }>();
+
+    return jsonResponse({ success: true, likes: updated?.total ?? 1 });
+  } catch (error) {
+    console.error('[likes POST]', error);
+    return jsonResponse({ success: false, error: 'Error al procesar el like' }, 500);
+  }
+}
+
+// ==========================================
+// Entrada del Worker
+// ==========================================
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // Endpoint de Likes
     if (url.pathname === '/api/likes' || url.pathname === '/api/likes/') {
-      // Manejo de CORS Preflight
-      if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          status: 204,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        });
-      }
-
-      // ==========================================
-      // GET: Obtener conteo de likes por post
-      // ==========================================
-      if (request.method === 'GET') {
-        // 1. Revisar si la respuesta ya está en el Edge Cache
-        const cache = (caches as unknown as { default: { match(req: Request): Promise<Response | undefined>; put(req: Request, res: Response): Promise<void> } }).default;
-        const cacheKey = new Request(url.toString(), request);
-        const cachedResponse = await cache?.match(cacheKey);
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        try {
-          if (!env.DB) {
-            return jsonResponse({ success: true, likes: {} });
-          }
-
-          // Consultar el total de likes agrupados por post
-          const { results } = await env.DB.prepare(
-            'SELECT post_id, COUNT(*) as count FROM post_likes GROUP BY post_id'
-          ).all<{ post_id: string; count: number }>();
-
-          const likesMap: Record<string, number> = {};
-          if (results) {
-            for (const row of results) {
-              likesMap[row.post_id] = row.count;
-            }
-          }
-
-          const response = jsonResponse(
-            { success: true, likes: likesMap },
-            200,
-            {
-              // Se guarda en el Edge CDN de Cloudflare durante 1 hora (3600 segundos)
-              'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
-            }
-          );
-
-          // Guardar en Edge Cache de Cloudflare sin bloquear la respuesta
-          if (cache) {
-            ctx.waitUntil(cache.put(cacheKey, response.clone()));
-          }
-          return response;
-        } catch (error) {
-          console.error('[API likes GET error]:', error);
-          return jsonResponse({ success: false, error: 'Error al consultar likes' }, 500);
-        }
-      }
-
-      // ==========================================
-      // POST: Registrar un nuevo like
-      // ==========================================
-      if (request.method === 'POST') {
-        try {
-          let body: { postId?: string } = {};
-          try {
-            body = await request.json();
-          } catch {
-            return jsonResponse({ success: false, error: 'JSON inválido' }, 400);
-          }
-
-          const postId = body.postId?.trim();
-          if (!postId || typeof postId !== 'string' || postId.length > 100) {
-            return jsonResponse({ success: false, error: 'ID de post inválido' }, 400);
-          }
-
-          // 1. Detección de IP y País
-          const clientIP =
-            request.headers.get('cf-connecting-ip') ||
-            request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-            '127.0.0.1';
-
-          // Cloudflare provee request.cf.country (código ISO de 2 letras)
-          const cf = (request as unknown as { cf?: { country?: string } }).cf;
-          const country = (cf?.country || request.headers.get('cf-ipcountry') || 'XX').toUpperCase();
-
-          // Permitir localhost para pruebas de desarrollo local
-          const isLocal = clientIP === '127.0.0.1' || clientIP === '::1' || clientIP.startsWith('192.168.');
-
-          // REGLA 1: Geolocalización (Solo LATAM + España + USA)
-          if (!isLocal && !ALLOWED_COUNTRIES.has(country)) {
-            return jsonResponse({ success: false, error: MSG_GEO_BLOCK }, 403);
-          }
-
-          // REGLA 1.5: Circuit Breaker en Memoria (Protege a D1 de ráfagas en segundos)
-          const now = Date.now();
-          writeTimestamps = writeTimestamps.filter((t) => now - t < BURST_WINDOW_MS);
-          if (writeTimestamps.length >= MAX_BURST_PER_WINDOW) {
-            return jsonResponse({ success: false, error: MSG_HIGH_VOLUME }, 429);
-          }
-          writeTimestamps.push(now);
-
-          if (!env.DB) {
-            return jsonResponse({ success: false, error: 'Base de datos no configurada' }, 503);
-          }
-
-          // REGLA 1.8: Circuit Breaker Global (Máx 50 likes por minuto en todo el blog)
-          const oneMinuteAgo = now - 60 * 1000;
-          const globalRecent = await env.DB.prepare(
-            'SELECT COUNT(*) as total FROM post_likes WHERE created_at > ?'
-          )
-            .bind(oneMinuteAgo)
-            .first<{ total: number }>();
-
-          if (globalRecent && globalRecent.total >= 50) {
-            return jsonResponse({ success: false, error: MSG_HIGH_VOLUME }, 429);
-          }
-
-          const salt = env.IP_SALT || 'jesus-oyola-music-blog-salt-secret';
-          const ipHash = await hashIP(clientIP, salt);
-          const oneDayAgo = now - 24 * 60 * 60 * 1000;
-
-          // REGLA 2: Una IP no puede darle like al mismo post dos veces en toda su vida
-          const existingPostLike = await env.DB.prepare(
-            'SELECT 1 FROM post_likes WHERE post_id = ? AND ip_hash = ? LIMIT 1'
-          )
-            .bind(postId, ipHash)
-            .first();
-
-          if (existingPostLike) {
-            return jsonResponse({ success: false, error: MSG_ALREADY_LIKED }, 409);
-          }
-
-          // REGLA 3: Máximo 1 like por día por IP en todo el blog
-          const dailyLikesCount = await env.DB.prepare(
-            'SELECT COUNT(*) as total FROM post_likes WHERE ip_hash = ? AND created_at > ?'
-          )
-            .bind(ipHash, oneDayAgo)
-            .first<{ total: number }>();
-
-          if (dailyLikesCount && dailyLikesCount.total >= 1) {
-            return jsonResponse({ success: false, error: MSG_DAILY_LIMIT }, 429);
-          }
-
-          // Insertar el like único
-          await env.DB.prepare(
-            'INSERT INTO post_likes (post_id, ip_hash, country, created_at) VALUES (?, ?, ?, ?)'
-          )
-            .bind(postId, ipHash, country, now)
-            .run();
-
-          // Obtener el conteo actualizado de este post
-          const updated = await env.DB.prepare(
-            'SELECT COUNT(*) as total FROM post_likes WHERE post_id = ?'
-          )
-            .bind(postId)
-            .first<{ total: number }>();
-
-          return jsonResponse({
-            success: true,
-            likes: updated?.total ?? 1,
-          });
-        } catch (error) {
-          console.error('[API likes POST error]:', error);
-          return jsonResponse({ success: false, error: 'Error al procesar el like' }, 500);
-        }
-      }
-
-      return jsonResponse({ error: 'Método no permitido' }, 405);
+      if (request.method === 'GET') return handleGet(url, env, ctx);
+      if (request.method === 'POST') return handlePost(request, url, env);
+      return jsonResponse({ error: 'Método no permitido' }, 405, { Allow: 'GET, POST' });
     }
 
-    // Para cualquier otra ruta, servir el contenido estático de ./dist
+    // Todo lo demás: archivos estáticos del blog
     return env.ASSETS.fetch(request);
   },
 };

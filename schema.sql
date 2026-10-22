@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS post_likes (
 
 CREATE INDEX IF NOT EXISTS idx_post_likes_post_id ON post_likes(post_id);
 CREATE INDEX IF NOT EXISTS idx_post_likes_ip_created ON post_likes(ip_hash, created_at);
+CREATE INDEX IF NOT EXISTS idx_post_likes_created ON post_likes(created_at);
