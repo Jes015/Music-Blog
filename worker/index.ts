@@ -117,8 +117,8 @@ export default {
             { success: true, likes: likesMap },
             200,
             {
-              // Se guarda en el Edge CDN de Cloudflare durante 60 segundos
-              'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+              // Se guarda en el Edge CDN de Cloudflare durante 1 hora (3600 segundos)
+              'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
             }
           );
 
@@ -212,13 +212,6 @@ export default {
           )
             .bind(postId)
             .first<{ total: number }>();
-
-          // Invalidar la caché de Cloudflare Edge para que el nuevo conteo se vea de inmediato
-          const cache = (caches as unknown as { default: { delete(req: Request): Promise<boolean> } }).default;
-          if (cache) {
-            ctx.waitUntil(cache.delete(new Request(url.origin + '/api/likes')));
-            ctx.waitUntil(cache.delete(new Request(url.origin + '/api/likes/')));
-          }
 
           return jsonResponse({
             success: true,

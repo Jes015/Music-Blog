@@ -38,7 +38,7 @@ export function markPostAsLikedLocal(postId: string): void {
 let likesCache: Record<string, number> = {};
 let fetchPromise: Promise<Record<string, number>> | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL_MS = 60000; // 60 segundos
+const CACHE_TTL_MS = 3600000; // 1 hora
 
 type Listener = (likes: Record<string, number>) => void;
 const listeners = new Set<Listener>();
