@@ -3,8 +3,11 @@ import { useEffect, useState } from "react"
 
 export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
     const [displayComments, setDisplayComments] = useState(false)
-    const [isLiked, setIsLiked] = useState(() => (postId ? isPostLikedLocal(postId) : false))
-    const [likesCount, setLikesCount] = useState<number>(initialLikes)
+    const isLocalLiked = Boolean(postId && isPostLikedLocal(postId))
+
+    const [isLiked, setIsLiked] = useState<boolean>(() => isLocalLiked)
+    // Si ya le dio like en este navegador, garantizamos que el contador muestre como mínimo initialLikes + 1
+    const [likesCount, setLikesCount] = useState<number>(() => (isLocalLiked ? initialLikes + 1 : initialLikes))
     const [notificationMessage, setNotificationMessage] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -12,25 +15,31 @@ export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
     useEffect(() => {
         if (!postId) return
 
-        // 1. Verificar si el usuario ya le dio like en este navegador
-        if (isPostLikedLocal(postId)) {
+        const locallyLiked = isPostLikedLocal(postId)
+        if (locallyLiked) {
             setIsLiked(true)
         }
 
-        // 2. Suscribirse a actualizaciones del caché de likes
-        const unsubscribe = subscribeToLikes((likesMap) => {
-            const remoteLikes = likesMap[postId]
-            if (typeof remoteLikes === 'number') {
-                setLikesCount(initialLikes + remoteLikes)
+        const updateCountWithRemote = (remote?: number) => {
+            const hasLiked = locallyLiked || isPostLikedLocal(postId)
+            const minimum = hasLiked ? initialLikes + 1 : initialLikes
+
+            if (typeof remote === 'number') {
+                const total = initialLikes + remote
+                setLikesCount(Math.max(minimum, total))
+            } else {
+                setLikesCount(prev => Math.max(minimum, prev))
             }
+        }
+
+        // 1. Suscribirse a actualizaciones del caché de likes
+        const unsubscribe = subscribeToLikes((likesMap) => {
+            updateCountWithRemote(likesMap[postId])
         })
 
-        // 3. Disparar consulta agrupada si aún no se ha hecho
+        // 2. Disparar consulta agrupada si aún no se ha hecho
         getLikesMap().then((likesMap) => {
-            const remoteLikes = likesMap[postId]
-            if (typeof remoteLikes === 'number') {
-                setLikesCount(initialLikes + remoteLikes)
-            }
+            updateCountWithRemote(likesMap[postId])
         })
 
         return () => {
@@ -70,12 +79,12 @@ export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
         const result = await sendLike(postId)
 
         if (!result.success) {
-            // Revertir optimismo si falló
+            // Revertir optimismo si falló en el servidor
             setIsLiked(false)
             setLikesCount(prev => Math.max(initialLikes, prev - 1))
             setNotificationMessage(result.error || 'No se pudo registrar el like')
         } else if (typeof result.likes === 'number') {
-            setLikesCount(initialLikes + result.likes)
+            setLikesCount(Math.max(initialLikes + 1, initialLikes + result.likes))
         }
 
         setIsSubmitting(false)

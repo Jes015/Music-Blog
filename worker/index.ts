@@ -213,6 +213,13 @@ export default {
             .bind(postId)
             .first<{ total: number }>();
 
+          // Invalidar la caché de Cloudflare Edge para que el nuevo conteo se vea de inmediato
+          const cache = (caches as unknown as { default: { delete(req: Request): Promise<boolean> } }).default;
+          if (cache) {
+            ctx.waitUntil(cache.delete(new Request(url.origin + '/api/likes')));
+            ctx.waitUntil(cache.delete(new Request(url.origin + '/api/likes/')));
+          }
+
           return jsonResponse({
             success: true,
             likes: updated?.total ?? 1,
