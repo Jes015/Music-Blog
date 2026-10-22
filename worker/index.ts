@@ -308,7 +308,8 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname === '/api/likes' || url.pathname === '/api/likes/') {
+    // Solo la ruta exacta: así la regla de rate limiting de Cloudflare (path eq /api/likes) cubre todo
+    if (url.pathname === '/api/likes') {
       if (request.method === 'GET') return handleGet(url, env, ctx);
       if (request.method === 'POST') return handlePost(request, url, env);
       return jsonResponse({ error: 'Método no permitido' }, 405, { Allow: 'GET, POST' });
