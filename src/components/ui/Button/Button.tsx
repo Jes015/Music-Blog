@@ -1,7 +1,9 @@
-import type { BaseComponentType } from "@/models"
 import clsx from "clsx"
+import React from "react"
 
-export const Button: BaseComponentType = ({ className, children, ...props }) => {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
+
+export const Button: React.FC<ButtonProps> = ({ className, children, ...props }) => {
     return (
         <button
             className={

@@ -1,8 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "music-blog",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "assets": {
-    "directory": "./dist"
-  }
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "music-blog-db",
+      "database_id": "0e87376d-6617-4e6e-a855-efab83576b57"
+    }
+  ]
 }
