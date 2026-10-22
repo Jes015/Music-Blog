@@ -44,6 +44,12 @@ const ALLOWED_COUNTRIES = new Set([
 const MSG_GEO_BLOCK = "Lo siento pero para evitar ataques masivos bloqueamos la mayoria de paises que no son hispanohablantes";
 const MSG_DAILY_LIMIT = "Tus likes son muy valiosos, solo 1 al dia ;)";
 const MSG_ALREADY_LIKED = "Ya le diste like a este post";
+const MSG_HIGH_VOLUME = "Estamos recibiendo una alta cantidad de likes en este momento. Por favor intenta en unos minutos ;)";
+
+// Protección contra ráfagas (Circuit Breaker en memoria del Edge)
+const BURST_WINDOW_MS = 10000; // Ventana de 10 segundos
+const MAX_BURST_PER_WINDOW = 15; // Máximo 15 votos en 10 segundos por nodo edge
+let writeTimestamps: number[] = [];
 
 // Hashea la IP con SHA-256 + salt para privacidad
 async function hashIP(ip: string, salt: string): Promise<string> {
@@ -168,13 +174,32 @@ export default {
             return jsonResponse({ success: false, error: MSG_GEO_BLOCK }, 403);
           }
 
+          // REGLA 1.5: Circuit Breaker en Memoria (Protege a D1 de ráfagas en segundos)
+          const now = Date.now();
+          writeTimestamps = writeTimestamps.filter((t) => now - t < BURST_WINDOW_MS);
+          if (writeTimestamps.length >= MAX_BURST_PER_WINDOW) {
+            return jsonResponse({ success: false, error: MSG_HIGH_VOLUME }, 429);
+          }
+          writeTimestamps.push(now);
+
           if (!env.DB) {
             return jsonResponse({ success: false, error: 'Base de datos no configurada' }, 503);
           }
 
+          // REGLA 1.8: Circuit Breaker Global (Máx 50 likes por minuto en todo el blog)
+          const oneMinuteAgo = now - 60 * 1000;
+          const globalRecent = await env.DB.prepare(
+            'SELECT COUNT(*) as total FROM post_likes WHERE created_at > ?'
+          )
+            .bind(oneMinuteAgo)
+            .first<{ total: number }>();
+
+          if (globalRecent && globalRecent.total >= 50) {
+            return jsonResponse({ success: false, error: MSG_HIGH_VOLUME }, 429);
+          }
+
           const salt = env.IP_SALT || 'jesus-oyola-music-blog-salt-secret';
           const ipHash = await hashIP(clientIP, salt);
-          const now = Date.now();
           const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
           // REGLA 2: Una IP no puede darle like al mismo post dos veces en toda su vida
