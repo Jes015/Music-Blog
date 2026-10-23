@@ -23,7 +23,10 @@ async function obtainTurnstileToken(container: HTMLElement | null): Promise<stri
                                 turnstile.remove(widgetId)
                             }
                         } catch {}
-                    }, 1000)
+                        if (container) {
+                            container.innerHTML = ''
+                        }
+                    }, 1200)
                 },
                 'error-callback': () => {
                     resolve('')

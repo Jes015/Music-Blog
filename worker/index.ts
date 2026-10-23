@@ -85,7 +85,7 @@ const BURST_WINDOW_MS = 10_000;     // Ventana local de 10 s
 const BURST_MAX = 10;               // Máx intentos por ventana en cada nodo edge
 
 const LIKES_CACHE_SECONDS = 3600;   // 1 hora
-const MAX_BODY_BYTES = 2048;        // Permite token de Turnstile
+const MAX_BODY_BYTES = 32768;       // 32 KB: permite tokens de Turnstile (que pueden medir 2-4 KB) sin riesgo
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
