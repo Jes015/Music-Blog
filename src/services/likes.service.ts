@@ -104,13 +104,14 @@ export async function getLikesMap(): Promise<Record<string, number>> {
  * Envía el like de un post al backend
  */
 export async function sendLike(
-  postId: string
+  postId: string,
+  turnstileToken?: string
 ): Promise<{ success: boolean; likes?: number; error?: string; alreadyLiked?: boolean }> {
   try {
     const res = await fetch('/api/likes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ postId }),
+      body: JSON.stringify({ postId, turnstileToken }),
     });
 
     const data = await res.json().catch(() => ({}));

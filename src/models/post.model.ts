@@ -19,6 +19,8 @@ export interface IPost {
     unlock?: Unlock
     valor?: boolean
     favoriteSong?: boolean
+    // ID real del post cuando `id` se reemplaza (ej. el post fijado usa un id de DOM distinto)
+    realId?: UUID
 }
 
 export type TPostPartial = Partial<IPost>

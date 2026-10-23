@@ -1,6 +1,44 @@
 import { getLikesMap, isPostLikedLocal, sendLike, subscribeToLikes } from "@/services/likes.service"
 import { useEffect, useState } from "react"
 
+const TURNSTILE_SITE_KEY = '0x4AAAAAAFiadduDOEJdcZiw'
+
+async function obtainTurnstileToken(container: HTMLElement | null): Promise<string> {
+    if (typeof window === 'undefined' || !window.turnstile || !container) {
+        return ''
+    }
+    const turnstile = window.turnstile
+    return new Promise((resolve) => {
+        container.innerHTML = ''
+        try {
+            const widgetId = turnstile.render(container, {
+                sitekey: TURNSTILE_SITE_KEY,
+                theme: 'dark',
+                size: 'flexible',
+                callback: (token: string) => {
+                    resolve(token)
+                    setTimeout(() => {
+                        try {
+                            if (widgetId) {
+                                turnstile.remove(widgetId)
+                            }
+                        } catch {}
+                    }, 1000)
+                },
+                'error-callback': () => {
+                    resolve('')
+                },
+                'expired-callback': () => {
+                    resolve('')
+                },
+            })
+        } catch (e) {
+            console.warn('[turnstile render error]', e)
+            resolve('')
+        }
+    })
+}
+
 export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
     const [displayComments, setDisplayComments] = useState(false)
     const isLocalLiked = Boolean(postId && isPostLikedLocal(postId))
@@ -60,7 +98,7 @@ export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
         setDisplayComments(prev => !prev)
     }
 
-    const handleLike = async () => {
+    const handleLike = async (turnstileContainer?: HTMLElement | null) => {
         if (!postId) return
 
         // Si ya le dio like, no se puede quitar (regla estricta)
@@ -71,12 +109,19 @@ export const usePostFooter = (postId?: string, initialLikes: number = 1) => {
 
         if (isSubmitting) return
 
-        // Actualización optimista inmediata en la UI
         setIsSubmitting(true)
+
+        // Obtener token de Turnstile de forma no intrusiva
+        let turnstileToken = ''
+        if (turnstileContainer && typeof window !== 'undefined' && window.turnstile) {
+            turnstileToken = await obtainTurnstileToken(turnstileContainer)
+        }
+
+        // Actualización optimista inmediata en la UI
         setIsLiked(true)
         setLikesCount(prev => prev + 1)
 
-        const result = await sendLike(postId)
+        const result = await sendLike(postId, turnstileToken)
 
         if (result.alreadyLiked) {
             // Ya estaba registrado en el servidor: se queda en rojo

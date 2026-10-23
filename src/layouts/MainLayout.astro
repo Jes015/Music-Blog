@@ -101,6 +101,7 @@ const jsonLdString = nodes.length
 		<meta name="twitter:image:alt" content={ogAlt} />
 
 		{jsonLdString && <script type="application/ld+json" set:html={jsonLdString} />}
+		<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 		<ViewTransitions />
 	</head>
 	<body class="bg-neutral-900 text-white overflow-x-hidden">

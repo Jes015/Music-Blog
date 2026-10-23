@@ -15,7 +15,7 @@ const { className, posts, pinnedPost, currentPage = 1 } = Astro.props;
 // Se CLONA (antes se mutaba el objeto original, que es el mismo de la lista paginada:
 // el post fijado perdía su id real en su propia página y el enlace compartido dejaba de anclar).
 const pinned: IPost | undefined = pinnedPost
-    ? { ...pinnedPost, id: "pinned-pinned-pinned-pinned-pinned" }
+    ? { ...pinnedPost, id: "pinned-pinned-pinned-pinned-pinned", realId: pinnedPost.id }
     : undefined;
 ---
 

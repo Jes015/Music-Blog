@@ -30,6 +30,7 @@ export interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
   IP_SALT?: string;
+  TURNSTILE_SECRET?: string;
 }
 
 interface EdgeCache {
@@ -84,7 +85,7 @@ const BURST_WINDOW_MS = 10_000;     // Ventana local de 10 s
 const BURST_MAX = 10;               // Máx intentos por ventana en cada nodo edge
 
 const LIKES_CACHE_SECONDS = 3600;   // 1 hora
-const MAX_BODY_BYTES = 256;
+const MAX_BODY_BYTES = 2048;        // Permite token de Turnstile
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -204,14 +205,48 @@ async function handlePost(request: Request, url: URL, env: Env): Promise<Respons
     return jsonResponse({ success: false, error: 'Petición demasiado grande' }, 413);
   }
   let postId = '';
+  let turnstileToken = '';
   try {
-    const body = JSON.parse(raw) as { postId?: unknown };
+    const body = JSON.parse(raw) as { postId?: unknown; turnstileToken?: unknown };
     postId = typeof body.postId === 'string' ? body.postId.trim().toLowerCase() : '';
+    turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken.trim() : '';
   } catch {
     return jsonResponse({ success: false, error: 'JSON inválido' }, 400);
   }
   if (!UUID_RE.test(postId)) {
     return jsonResponse({ success: false, error: 'ID de post inválido' }, 400);
+  }
+
+  // Verificación de Turnstile (si el secret está configurado)
+  if (env.TURNSTILE_SECRET && !isLocalDev) {
+    if (!turnstileToken) {
+      return jsonResponse({ success: false, error: 'Verificación de seguridad requerida' }, 403);
+    }
+    try {
+      const verifyFormData = new FormData();
+      verifyFormData.append('secret', env.TURNSTILE_SECRET);
+      verifyFormData.append('response', turnstileToken);
+      const clientIP = request.headers.get('cf-connecting-ip');
+      if (clientIP) {
+        verifyFormData.append('remoteip', clientIP);
+      }
+
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: verifyFormData,
+      });
+
+      const outcome = (await verifyRes.json()) as { success: boolean };
+      if (!outcome.success) {
+        return jsonResponse(
+          { success: false, error: 'No se pudo verificar que seas humano. Intenta de nuevo ;)' },
+          403
+        );
+      }
+    } catch (e) {
+      console.error('[turnstile verify error]', e);
+      return jsonResponse({ success: false, error: 'Error en la verificación de seguridad' }, 500);
+    }
   }
 
   // 3. País (Cloudflare lo da gratis en cada request)

@@ -1,7 +1,7 @@
 import { IconLike, IconNoLike } from "@/assets/Icons"
 import { Button } from "@/components/ui"
 import type { BaseComponentType } from "@/models"
-import { Suspense, lazy } from "react"
+import { Suspense, lazy, useRef } from "react"
 import { usePostContext } from "../../services/context"
 import { usePostFooter } from "./hooks"
 
@@ -9,6 +9,8 @@ const Comments = lazy(() => import('@/components/ui').then(module => ({ default:
 
 export const PostFooter: BaseComponentType = () => {
     const { data } = usePostContext()
+    const turnstileContainerRef = useRef<HTMLDivElement>(null)
+
     const {
         displayComments,
         isLiked,
@@ -17,14 +19,14 @@ export const PostFooter: BaseComponentType = () => {
         toggleDisplayComments,
         notificationMessage,
         isSubmitting,
-    } = usePostFooter(data?.id, data?.likes ?? 1)
+    } = usePostFooter(data?.realId ?? data?.id, data?.likes ?? 1)
 
     const handleOnClickToDisplayComments = () => {
         toggleDisplayComments()
     }
 
     const handleOnClickToToggleLike = () => {
-        handleLike()
+        handleLike(turnstileContainerRef.current)
     }
 
     return (
@@ -73,6 +75,9 @@ export const PostFooter: BaseComponentType = () => {
                     </span>
                 </Button>
             </div>
+
+            {/* Contenedor dinámico de Turnstile: se activa solo al dar like si Cloudflare requiere verificación */}
+            <div ref={turnstileContainerRef} className="flex justify-center empty:hidden py-1" />
 
             {displayComments && (
                 <Suspense>
