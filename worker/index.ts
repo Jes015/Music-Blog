@@ -73,12 +73,13 @@ const BLOCKED_ASNS = new Set([
 ]);
 
 const MSG_GEO_BLOCK = "Lo siento pero para evitar ataques masivos bloqueamos la mayoria de paises que no son hispanohablantes";
-const MSG_DAILY_LIMIT = "Tus likes son muy valiosos, solo 1 al dia ;)";
+const MSG_DAILY_LIMIT = "Tus likes son muy valiosos, máximo 4 al día ;)";
 const MSG_ALREADY_LIKED = "Ya le diste like a este post";
 const MSG_HIGH_VOLUME = "Estamos recibiendo una alta cantidad de likes en este momento. Por favor intenta en unos minutos ;)";
 const MSG_BLOCKED_NETWORK = "Para evitar bots no se permiten likes desde VPNs o servidores ;)";
 
 // Cortacircuitos
+const MAX_LIKES_PER_IP_PER_DAY = 4; // Máx likes por persona al día (en posts diferentes)
 const GLOBAL_MAX_PER_MINUTE = 30;   // Máx likes por minuto en TODO el blog
 const GLOBAL_MAX_PER_DAY = 500;     // Máx likes por día en TODO el blog (somos pequeños, sobra)
 const BURST_WINDOW_MS = 10_000;     // Ventana local de 10 s
@@ -303,7 +304,7 @@ async function handlePost(request: Request, url: URL, env: Env): Promise<Respons
     if (status?.already_liked) {
       return jsonResponse({ success: false, error: MSG_ALREADY_LIKED, alreadyLiked: true }, 409);
     }
-    if ((status?.ip_today ?? 0) >= 1) {
+    if ((status?.ip_today ?? 0) >= MAX_LIKES_PER_IP_PER_DAY) {
       return jsonResponse({ success: false, error: MSG_DAILY_LIMIT }, 429);
     }
     if ((status?.global_minute ?? 0) >= GLOBAL_MAX_PER_MINUTE || (status?.global_day ?? 0) >= GLOBAL_MAX_PER_DAY) {
@@ -311,17 +312,24 @@ async function handlePost(request: Request, url: URL, env: Env): Promise<Respons
     }
 
     // 8. Inserción ATÓMICA: vuelve a validar las reglas dentro del mismo INSERT.
-    //    Si llegan 2 peticiones simultáneas de la misma IP, solo una entra.
+    //    Garantiza que no se supere el tope de 4 likes diarios ni se duplique el post.
     const result = await env.DB.prepare(
       `INSERT OR IGNORE INTO post_likes (post_id, ip_hash, country, created_at)
        SELECT ?1, ?2, ?3, ?4
-       WHERE NOT EXISTS (SELECT 1 FROM post_likes WHERE ip_hash = ?2 AND created_at > ?5)
-         AND (SELECT COUNT(*) FROM post_likes WHERE created_at > ?6) < ?7`
+       WHERE NOT EXISTS (SELECT 1 FROM post_likes WHERE post_id = ?1 AND ip_hash = ?2)
+         AND (SELECT COUNT(*) FROM post_likes WHERE ip_hash = ?2 AND created_at > ?5) < ?6
+         AND (SELECT COUNT(*) FROM post_likes WHERE created_at > ?7) < ?8`
     )
-      .bind(postId, ipHash, country, now, oneDayAgo, oneMinuteAgo, GLOBAL_MAX_PER_MINUTE)
+      .bind(postId, ipHash, country, now, oneDayAgo, MAX_LIKES_PER_IP_PER_DAY, oneMinuteAgo, GLOBAL_MAX_PER_MINUTE)
       .run();
 
     if (!result.meta?.changes) {
+      const exists = await env.DB.prepare('SELECT 1 FROM post_likes WHERE post_id = ?1 AND ip_hash = ?2')
+        .bind(postId, ipHash)
+        .first();
+      if (exists) {
+        return jsonResponse({ success: false, error: MSG_ALREADY_LIKED, alreadyLiked: true }, 409);
+      }
       return jsonResponse({ success: false, error: MSG_DAILY_LIMIT }, 429);
     }
 
