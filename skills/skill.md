@@ -24,7 +24,21 @@ Cada archivo debe contener un objeto JSON con los siguientes campos:
 | `likes` | `number` | El contador de likes inicial (por defecto inicia en `1`). |
 | `publisher` | `string` | Siempre se debe configurar como `"j-oyola-baby-la-maravilla"`. |
 | `spotifyUrl` | `string` (opcional) | El enlace de inserción (embed) de Spotify si se incluye una canción. Formato: `https://open.spotify.com/embed/track/[TRACK_ID]?utm_source=generator`. |
-| `valor` | `boolean` (opcional) | Configurar en `true` para destacar el post y enviarlo a la página de "Mis pensamientos más sabios" (`/destacados`). |
+| `valor` | `boolean` (opcional) | Configurar en `true` únicamente si el post le aporta valor real a la humanidad (sabiduría, lecciones de vida, reflexiones constructivas). Esto lo destaca y lo envía a la página de "Mis pensamientos más sabios" (`/destacados`). Si no aporta valor a la humanidad, omitir este campo. |
+
+### Criterio de Selección para `valor: true`
+
+El campo `valor: true` está reservado exclusivamente para publicaciones que le aporten valor real a la humanidad:
+
+* **Cuándo poner `valor: true`:**
+  * Publicaciones con reflexiones profundas, sabiduría o lecciones de vida que dejen una enseñanza constructiva para el crecimiento del lector.
+  * Guías o análisis sobre relaciones humanas, psicología práctica, superación, valores y empatía (ej. cómo detectar personas manipuladoras, manejo del ego, etc.).
+  * Contenido que busca inspirar o sumar positivamente a la sociedad y a la vida de quienes lo leen.
+
+* **Cuándo NO poner `valor: true` (omitir el campo):**
+  * Reseñas, impresiones u opiniones casuales sobre animes, series, películas, videojuegos o música.
+  * Anécdotas personales, actualizaciones sobre proyectos, hobbies o desahogos cotidianos sin una enseñanza universal.
+  * Si la publicación es un simple comentario o apreciación sin un aporte sustancial para la humanidad, por defecto **no se debe incluir**.
 
 ### Ejemplo del Archivo JSON
 
