@@ -13,7 +13,7 @@ export const INDEX_PAGINATED_PAGES = false
 export const SHOW_ADJACENT_POSTS = false
 
 export const SOCIAL_LINKS = {
-  instagram: 'https://www.instagram.com/jesus.oyola.15',
+  instagram: 'https://instagram.com/jesus.oyola_',
   youtube: 'https://www.youtube.com/@jesus.oyola.15',
   linkedin: 'https://www.linkedin.com/in/jesus-oyola/',
   musicbrainz: 'https://musicbrainz.org/artist/a4845d44-e739-4406-b832-0adfd4c65d2f',
