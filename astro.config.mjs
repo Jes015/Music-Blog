@@ -28,7 +28,7 @@ const postDates = loadPostDates()
 const newest = new Date(Math.max(0, ...[...postDates.values()].map((d) => d.getTime())))
 
 // Secciones cuyo contenido se refresca cuando se publica un post nuevo (proxy de frescura).
-const NEWEST_PAGES = new Set(['/', '/posts/', '/destacados/', '/felicidad/', '/jesus-oyola/', '/metas/'])
+const NEWEST_PAGES = new Set(['/', '/posts/', '/destacados/', '/felicidad/', '/jesus-oyola/'])
 
 // Mantener en sync con INDEX_PAGINATED_PAGES (src/consts.ts): páginas noindex = fuera del sitemap.
 const PAGINATED_HOME = /^\/\d+\/?$/

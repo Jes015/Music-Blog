@@ -171,13 +171,5 @@ export function routeSeoDefaults(pathname: string): RouteSeo | undefined {
     }
   }
 
-  if (path === '/metas') {
-    return {
-      title: `Metas y sueños — ${SITE_NAME}`,
-      description: `Las metas de ${SITE_NAME} año por año: cuáles ya cumplió, cuáles siguen pendientes y cuáles no logró, con su avance a la vista.`,
-      breadcrumbs: [HOME_CRUMB, { name: 'Metas', path: '/metas/' }],
-    }
-  }
-
   return undefined
 }
